@@ -6,7 +6,12 @@ from unitree_sdk2py.idl.default import unitree_go_msg_dds__LowState_ # specific 
 from unitree_sdk2py.idl.unitree_go.msg.dds_ import LowState_ # specific to using Go2
 from unitree_sdk2py.core.channel import ChannelFactoryInitialize
 from unitree_sdk2py.go2.sport.sport_client import SportClient
-from unitree_remote_controller import CustomHandler
+from unitree_remote_controller import CustomHandler, ControllerState
+
+def controller_callback(controller_state: ControllerState):
+    if controller_state.a == 1:
+        pass
+
 
 
 def main():
@@ -17,9 +22,9 @@ def main():
 
     sport_client = SportClient()
     sport_client.Init()
-
+    '''
     stop_event = threading.Event()
-    handler = CustomHandler(stop_event)
+    handler = CustomHandler])
     handler.init()
     
     vx, vy, vz = 0.3, 0.0, 0.0
@@ -33,6 +38,6 @@ def main():
         time.sleep(0.05) 
 
     stop_event.clear()
-
+    '''    
 if __name__ == "__main__":
     main()

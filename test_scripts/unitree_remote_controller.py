@@ -11,7 +11,7 @@ from collections.abc import Callable
 
 
 @dataclass
-class RemoteState:
+class ControllerState:
     lx: float = 0.0
     ly: float = 0.0
     rx: float = 0.0
@@ -40,18 +40,18 @@ class RemoteState:
 class CustomHandler:
     class UnitreeRemoteControllerInputParser:
         def __init__(self):
-            self.state = RemoteState()
+            self.state = ControllerState()
 
         # Parses 2 bytes of data (data1 and data2) to detect which button inputs are pressed. 
         def _parse_buttons(self, data1, data2):
-            mappings = {
-                data1: ["R1", "L1", "Start", "Select", "R2", "L2", "F1", "F3"],
-                data2: ["A", "B", "X", "Y", "Up", "Right", "Down", "Left"]
-            }
+            mapping1 = ["R1", "L1", "Start", "Select", "R2", "L2", "F1", "F3"]
+            mapping2 = ["A", "B", "X", "Y", "Up", "Right", "Down", "Left"]
 
-            for data, names in mappings.items():
-                for bit_index, name in enumerate(names):
-                    setattr(self, name, (data >> bit_index) & 1)
+            for i, name in enumerate(mapping1):
+                setattr(self, name, (data1 >> i) & 1)
+
+            for i, name in enumerate(mapping2):
+                setattr(self, name, (data2 >> i) & 1)
 
         # Parses all 24 bytes of data. Bytes 2 and 3 represent button inputs.
         def _parse_key(self,data):
@@ -70,16 +70,26 @@ class CustomHandler:
             self._parse_key(remoteData)
             self._parse_buttons(remoteData[2], remoteData[3])
         
-    def __init__(self, stop_event: threading.Event):
+    def __init__(self, callbacks: list[Callable[[ControllerState], None]]):
         self.input_parser = CustomHandler.UnitreeRemoteControllerInputParser()
-        self.stop_event = stop_event
+        self.callbacks = callbacks
 
     def init(self):
         self.lowstate_subscriber = ChannelSubscriber("rt/lf/lowstate", LowState_)
         self.lowstate_subscriber.Init(self._lowstate_callback, 10)
+
+    def add_callbacks(self, callbacks: list[Callable[[ControllerState], None]]):
+        self.callbacks.extend(callbacks)
+
+    def remove_callbacks(self, callbacks: list[Callable[[ControllerState], None]]):
+        for callback in callbacks:
+            if callback in self.callbacks:
+                self.callbacks.remove(callback)
+
+    def _handle_callbacks(self, controller_state: ControllerState):
+        for callback in self.callbacks:
+            callback(controller_state)
     
     def _lowstate_callback(self, msg: LowState_):
         self.input_parser.parse(msg.wireless_remote)
-
-        if self.input_parser.state.a == 1:
-            self.stop_event.set()
+        self._handle_callbacks(self.input_parser.state)
