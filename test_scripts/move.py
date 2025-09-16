@@ -6,7 +6,8 @@ from unitree_sdk2py.idl.default import unitree_go_msg_dds__LowState_ # specific 
 from unitree_sdk2py.idl.unitree_go.msg.dds_ import LowState_ # specific to using Go2
 from unitree_sdk2py.core.channel import ChannelFactoryInitialize
 from unitree_sdk2py.go2.sport.sport_client import SportClient
-from unitree_remote_controller import CustomHandler, ControllerState
+from test_scripts.CustomHandler import CustomHandler
+from test_scripts.controller_interface import ControllerState
 
 def controller_callback(controller_state: ControllerState):
     if controller_state.a == 1:

@@ -1,42 +1,14 @@
+from test_scripts.controller_interface import ControllerState
+
+
+from unitree_sdk2py.core.channel import ChannelSubscriber
+from unitree_sdk2py.idl.unitree_go.msg.dds_ import LowState_
+
 
 import struct
-import threading
-
-from unitree_sdk2py.idl.default import unitree_go_msg_dds__LowState_ # specific to using Go2
-from unitree_sdk2py.idl.unitree_go.msg.dds_ import LowState_ # specific to using Go2
-from unitree_sdk2py.core.channel import ChannelSubscriber, ChannelFactoryInitialize
-
-from dataclasses import dataclass
 from collections.abc import Callable
 
 
-@dataclass
-class ControllerState:
-    lx: float = 0.0
-    ly: float = 0.0
-    rx: float = 0.0
-    ry: float = 0.0
-    
-    l1: float = 0.0
-    l2: float = 0.0
-    r1: float = 0.0
-    r2: float = 0.0
-    
-    a: float = 0.0
-    b: float = 0.0
-    x: float = 0.0
-    y: float = 0.0
-    
-    up: float = 0.0
-    down: float = 0.0
-    left: float = 0.0
-    right: float = 0.0
-    
-    select: float = 0.0
-    start: float = 0.0
-    f1: float = 0.0
-    f3: float = 0.0
-    
 class CustomHandler:
     class UnitreeRemoteControllerInputParser:
         def __init__(self):
@@ -66,10 +38,10 @@ class CustomHandler:
             ly_offset = 20
             self.Ly = struct.unpack('<f', data[ly_offset:ly_offset + 4])[0]
 
-        def parse(self,remoteData):
+        def parse(self, remoteData):
             self._parse_key(remoteData)
             self._parse_buttons(remoteData[2], remoteData[3])
-        
+
     def __init__(self, callbacks: list[Callable[[ControllerState], None]]):
         self.input_parser = CustomHandler.UnitreeRemoteControllerInputParser()
         self.callbacks = callbacks
@@ -89,7 +61,7 @@ class CustomHandler:
     def _handle_callbacks(self, controller_state: ControllerState):
         for callback in self.callbacks:
             callback(controller_state)
-    
+
     def _lowstate_callback(self, msg: LowState_):
         self.input_parser.parse(msg.wireless_remote)
         self._handle_callbacks(self.input_parser.state)
