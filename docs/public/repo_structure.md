@@ -20,6 +20,7 @@
 │   │   ├── ocr
 │   │   └── video
 │   └── terrain_generator
+│       └── resources
 ├── go2
 │   ├── communication
 │   ├── core
@@ -30,7 +31,6 @@
 │   │   ├── audio
 │   │   ├── input
 │   │   ├── lidar
-│   │   │   └── utils
 │   │   ├── movement
 │   │   ├── ocr
 │   │   └── video
@@ -46,26 +46,19 @@
 │       ├── bringup
 │       │   ├── config
 │       │   └── launch
-│       ├── go2_interfaces
-│       │   └── msg
 │       └── lidar_processor
+│           ├── benchmark
 │           ├── lidar_processor
-│           │   └── utils
 │           ├── resource
 │           └── test
-│               ├── integration
-│               ├── profiling
-│               └── unit
 └── scripts
-    ├── unix
-    └── windows
 ```
 
 `c_extensions/` - Lidar filtering and decoding utilities written in C.
 
 `docs/internal/` - Markdown files for building API documentation. \
 `docs/internal/api/` - Markdown files for building student-facing API documentation. \
-`docs/internal/dev/` - Markdown files for building developer-facing API documentation. 
+`docs/internal/dev/` - Markdown files for building developer-facing API documentation.
 
 `docs/public/` - Formatted documentation for students regarding the SDK itself.
 
@@ -81,7 +74,7 @@
 `go2/core/` - Core SDK functionalities. \
 `go2/hardware/` - Wrappers for accessing the underlying robot (Native Hardware) or simulator (Virtual Hardware) communications. \
 `go2/modules/` - Implementation code for each module (robot functionality) supported by the SDK. \
-`go2/states/` - Code for supporting a state-machine architecture on the robot. 
+`go2/states/` - Code for supporting a state-machine architecture on the robot.
 
 `refs/condarefs/` - Captured packages for school conda environment. \
 `refs/ubunturefs/` - Information about school Ubuntu device.
@@ -90,7 +83,6 @@
 
 `ros2_ws/` - Workspace for communicating with the robot via ROS2. \
 `ros2_ws/src/bringup/` - Files for creating ROS2 node launch scripts. \
-`ros2_ws/src/go2_interfaces/` - ROS2 message created for inter-node communication. \
-`ros2_ws/src/lidar_processor/` - ROS2 nodes for decoding and filtering Lidar information. 
+`ros2_ws/src/lidar_processor/` - ROS2 nodes for decoding Lidar information published by the physical robot.
 
-`scripts/` - .sh or .bat files for miscellaneous use.
+`scripts/` - .sh files for miscellaneous use.
