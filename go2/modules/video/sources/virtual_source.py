@@ -34,11 +34,6 @@ class VirtualCameraSource(CameraSource):
 
         self._cam_service = self._node.service_builder(iox2.ServiceName.new(CameraQoS.TOPIC_SIM_CAMERA)) \
                                 .publish_subscribe(FrameData_) \
-                                .max_publishers(CameraQoS.MAX_PUBLISHERS) \
-                                .max_subscribers(CameraQoS.MAX_SUBSCRIBERS) \
-                                .subscriber_max_buffer_size(CameraQoS.SUBSCRIBER_MAX_BUFFER_SIZE) \
-                                .subscriber_max_borrowed_samples(CameraQoS.SUBSCRIBER_MAX_BORROWED_SAMPLES) \
-                                .history_size(CameraQoS.HISTORY_SIZE) \
                                 .open_or_create()
 
 
