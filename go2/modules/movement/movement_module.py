@@ -10,15 +10,17 @@ class MovementModule(DogModule):
     Users should not access or construct this class directly.
     Rather, they should access it through the :class:`~core.controller.Go2Controller` instance.
 
-    Important
-    ---------
-    - Virtual and native movement commands may not function exactly the same way.
-      Their behavior is not fully transitive across backends, so they should be used with care when switching between them.
-
     Parameters
     ----------
     hardware : HardwareInterfaceMovement
         The underlying movement hardware interface that communicates with the robot.
+
+    Important
+    ---------
+    - Virtual and native movement commands may not function exactly the same way.
+      Their behavior is not fully transitive across backends, so they should be used with care when switching between them.
+    - Commands are intended to wrap or imitate the ``SportClient`` class provided by the Unitree SDK.
+      For details see `Motion Services Interface V2.0 <https://support.unitree.com/home/en/developer/Motion_Services_Interface_V2.0>`_.
     """
 
     def __init__(self, hardware: HardwareInterfaceMovement) -> None:
@@ -43,43 +45,31 @@ class MovementModule(DogModule):
         """
         self._initialized = True
 
-    def rotate(self, amount: float) -> None:
+    def move(self, x: float = 0.0, y: float = 0.0, yaw: float = 0.0) -> None:
         """
-        Rotate the robot around its yaw axis.
+        Move the robot forward/backward, laterally, and rotate about its vertical axis.
 
         Parameters
         ----------
-        amount : float
-            Desired rotation amount. Automatically clamped to
-            [-max_rotation, max_rotation].
-
-        Notes
-        -----
-        - The rotation is relative to the robot’s current orientation.
-        """
-        amount = max(-self.max_rotation, min(amount, self.max_rotation))
-        self.hardware._rotate(amount)
-
-    def move(self, amount_x: float = 0.0, amount_y: float = 0.0) -> None:
-        """
-        Move the robot forward/backward and laterally.
-
-        Parameters
-        ----------
-        amount_x : float, optional
+        x : float, optional
             Forward/backward movement amount. Positive is forward.
             Automatically clamped to [-max_translation, max_translation].
-        amount_y : float, optional
+        y : float, optional
             Lateral movement amount. Positive is right.
             Automatically clamped to [-max_translation, max_translation].
+        yaw : float, optional
+            Rotation about the vertical (z) axis. Positive is counterclockwise.
+            Automatically clamped to [-max_yaw, max_yaw].
 
         Notes
         -----
-        - Movements are relative to the robot’s current orientation.
+        - Translational movements are relative to the robot's current orientation.
+        - Translation and yaw rotation are executed as a single relative motion.
         """
-        amount_x = max(-self.max_translation, min(amount_x, self.max_translation))
-        amount_y = max(-self.max_translation, min(amount_y, self.max_translation))
-        self.hardware._move(amount_x, amount_y)
+        x = max(-self.max_translation, min(x, self.max_translation))
+        y = max(-self.max_translation, min(y, self.max_translation))
+        yaw = max(-self.max_rotation, min(yaw, self.max_rotation))
+        self.hardware._move(x, y, yaw)
 
     def stand_up(self) -> None:
         """

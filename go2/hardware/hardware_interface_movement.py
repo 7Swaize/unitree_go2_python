@@ -33,7 +33,7 @@ class HardwareInterfaceMovement(ABC):
         pass
     
     @abstractmethod
-    def _move(self, vx: float, vy: float) -> None:
+    def _move(self, vx: float, vy: float, vyaw: float) -> None:
         """
         Move the dog in the horizontal plane.
 
@@ -43,18 +43,8 @@ class HardwareInterfaceMovement(ABC):
             Forward/backward velocity.
         vy : float
             Left/right velocity.
-        """
-        pass
-
-    @abstractmethod
-    def _rotate(self, vrot: float):
-        """
-        Rotate the dog in place.
-
-        Parameters
-        ----------
-        vrot : float
-            Rotational velocity.
+        vyaw: float
+            Rotation velocity.
         """
         pass
 

@@ -52,14 +52,9 @@ class NativeHardwareMovement(HardwareInterfaceMovement):
             self._sport_client.StopMove()
     
     @override
-    def _move(self, vx: float, vy: float) -> None:
+    def _move(self, vx: float, vy: float, vyaw: float) -> None:
         if self._sport_client:
-            self._sport_client.Move(vx, vy, 0)
-
-    @override
-    def _rotate(self, vrot: float):
-        if self._sport_client:
-            self._sport_client.Move(0, 0, vrot)
+            self._sport_client.Move(vx, vy, vyaw)
     
     @override
     def _stand_up(self) -> None:

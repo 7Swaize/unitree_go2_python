@@ -62,25 +62,12 @@ class VirtualHardwareMovement(HardwareInterfaceMovement):
                 return CommandStatus(response.payload().contents.status)
 
     @override
-    def _move(self, vx: float, vy: float) -> None:
+    def _move(self, vx: float, vy: float, vyaw: float) -> None:
         sample = self._floatargs_client.loan_uninit()
         sample.user_header().contents.command = SportCommand.MOVE
         sample.user_header().contents.track = True
         sample = sample.write_payload(
-            FloatArgsData_(arg1=vx, arg2=vy)
-        )
-        pending_response = sample.send()
-
-        self._wait_for_response(pending_response)
-        return
-
-    @override
-    def _rotate(self, vrot: float):
-        sample = self._floatargs_client.loan_uninit()
-        sample.user_header().contents.command = SportCommand.ROTATE
-        sample.user_header().contents.track = True
-        sample = sample.write_payload(
-            FloatArgsData_(arg1=vrot, arg2=0)
+            FloatArgsData_(arg1=vx, arg2=vy, arg3=vyaw)
         )
         pending_response = sample.send()
 
