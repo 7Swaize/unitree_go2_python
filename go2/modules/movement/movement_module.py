@@ -100,20 +100,12 @@ class MovementModule(DogModule):
     def damp(self) -> None:
         """
         Command the robot to damp.
-
-        Important
-        ---------
-        This command is not supported when :attr:`HardwareType.VIRTUAL <go2.hardware.hardware_type.HardwareType.VIRTUAL>` is selected and will raise NotImplementedError.
         """
         self.hardware._damp()
 
     def balance_stand(self) -> None:
         """
         Command the robot to balance stand.
-
-        Important
-        ---------
-        This command is not supported when :attr:`HardwareType.VIRTUAL <go2.hardware.hardware_type.HardwareType.VIRTUAL>` is selected and will raise NotImplementedError.
         """
         self.hardware._balance_stand()
 
