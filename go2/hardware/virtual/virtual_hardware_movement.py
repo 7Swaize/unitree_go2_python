@@ -104,7 +104,7 @@ class VirtualHardwareMovement(HardwareInterfaceMovement):
     @override
     def _stop_move(self) -> None:
         sample = self._noargs_client.loan_uninit()
-        sample.user_header().contents.command = SportCommand.STOP
+        sample.user_header().contents.command = SportCommand.STOP_MOVE
         sample.user_header().contents.track = True
         sample = sample.write_payload(
             NoArgsData_(null=0)
@@ -117,11 +117,29 @@ class VirtualHardwareMovement(HardwareInterfaceMovement):
 
     @override
     def _damp(self) -> None:
-        raise NotImplementedError("Virtual hardware does not support this command yet.")
+        sample = self._noargs_client.loan_unint()
+        sample.user_header().contents.command = SportCommand.DAMP
+        sample.user_header().contents.track = True
+        sample = sample.write_payload(
+            NoArgsData_(null=0)
+        )
+        pending_response = sample.send()
+
+        self._wait_for_response(pending_response)
+        return
 
     @override
     def _balance_stand(self) -> None:
-        raise NotImplementedError("Virtual hardware does not support this command yet.")
+        sample = self._noargs_client.loan_uninit()
+        sample.user_header().contents.command = SportCommand.BALANCE_STAND
+        sample.user_header().contents.track = True
+        sample = sample.write_payload(
+            NoArgsData_(null=0)
+        )
+        pending_response = sample.send()
+
+        self._wait_for_response(pending_response)
+        return
 
     @override
     def _recovery_stand(self) -> None:
