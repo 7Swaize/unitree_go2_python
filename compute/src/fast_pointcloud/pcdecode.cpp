@@ -60,16 +60,16 @@ struct NoIntensity {};
 
 using decode_fn_t = Py_ssize_t (*)(
     const char* base, Py_ssize_t n_points, int point_step,
-    int ox, int oy, int oz, int oi, bool skip_nans,
+    int ox, int oy, int oz, int oi,
     float* RESTRICT xyz_data, float* RESTRICT i_data);
 
 
-template <Numeric TXyz, NumericOrSpecial<NoIntensity> TInten, bool Swap>
+template <Numeric TXyz, NumericOrSpecial<NoIntensity> TInten, bool Swap, bool SkipNans>
 static Py_ssize_t decode_loop(const char* RESTRICT base, Py_ssize_t n_points, int point_step,
-                               int ox, int oy, int oz, int oi, bool skip_nans,
+                               int ox, int oy, int oz, int oi,
                                float* RESTRICT xyz_data, float* RESTRICT i_data)
 {
-    constexpr bool has_intensity = !std::is_same_v<TInten, NoIntensity>;
+    constexpr bool kHasIntensity = !std::is_same_v<TInten, NoIntensity>;
     
     Py_ssize_t count = 0;
     for (Py_ssize_t idx = 0; idx < n_points; idx++) { 
@@ -79,19 +79,21 @@ static Py_ssize_t decode_loop(const char* RESTRICT base, Py_ssize_t n_points, in
         float z = static_cast<float>(read_val<TXyz, Swap>(p + oz));
     
         float inten = 0.0f;
-        if constexpr (has_intensity) {
+        if constexpr (kHasIntensity) {
             inten = static_cast<float>(read_val<TInten, Swap>(p + oi));
         }
 
-        bool drop = skip_nans && (std::isnan(x) || std::isnan(y) || std::isnan(z) || (has_intensity && std::isnan(inten)));
-        if (drop) {
-            continue;
+        if constexpr (SkipNans) {
+            if (std::isnan(x) || std::isnan(y) || std::isnan(z) || (kHasIntensity && std::isnan(inten))) {
+                continue;
+            }
         }
 
         xyz_data[count * 3 + 0] = x;
         xyz_data[count * 3 + 1] = y;
         xyz_data[count * 3 + 2] = z;
-        if constexpr (has_intensity) {
+
+        if constexpr (kHasIntensity) {
             i_data[count] = inten;
         }
 
@@ -109,34 +111,45 @@ using IntenTypes = std::tuple<NoIntensity, int8_t, uint8_t, int16_t, uint16_t,
 constexpr int kXyzTypesSize = std::tuple_size_v<XyzTypes>;
 constexpr int kIntenTypesSize = std::tuple_size_v<IntenTypes>;
 
-template <bool Swap, std::size_t Xi, std::size_t Ii>
+template <bool Swap, bool SkipNans, std::size_t Xi, std::size_t Ii>
 consteval decode_fn_t make_fn() {
     return &decode_loop<
         std::tuple_element_t<Xi, XyzTypes>,
         std::tuple_element_t<Ii, IntenTypes>,
-        Swap
+        Swap,
+        SkipNans
     >;
 }
 
-template <bool Swap, std::size_t Xi, std::size_t... Iis>
-consteval auto make_row(std::index_sequence<Iis...>) {
+template <bool Swap, bool SkipNans, std::size_t Xi, std::size_t... Iis>
+consteval auto make_dim3(std::index_sequence<Iis...>) {
     return std::array{
-        make_fn<Swap, Xi, Iis>()...
+        make_fn<Swap, SkipNans, Xi, Iis>()...
     };
 }
 
-template <bool Swap, std::size_t... Xis>
-consteval auto make_table(std::index_sequence<Xis...>) {
+template <bool Swap, bool SkipNans, std::size_t... Xis>
+consteval auto make_dim2(std::index_sequence<Xis...>) {
     return std::array{
-        make_row<Swap, Xis>(std::make_index_sequence<kIntenTypesSize>{})...
+        make_dim3<Swap, SkipNans, Xis>(std::make_index_sequence<kIntenTypesSize>{})...
     };
 }
 
-constexpr auto kTableNoSwap = make_table<false>(std::make_index_sequence<kXyzTypesSize>{});
-constexpr auto kTableSwap = make_table<true>(std::make_index_sequence<kXyzTypesSize>{});
+template <bool Swap>
+consteval auto make_dim1() {
+    return std::array{
+        make_dim2<Swap, false>(std::make_index_sequence<kXyzTypesSize>{}),
+        make_dim2<Swap, true>(std::make_index_sequence<kXyzTypesSize>{})
+    };
+}
+
+constexpr auto kTableNoSwap = make_dim1<false>();
+constexpr auto kTableSwap = make_dim1<true>();
 
 
-static decode_fn_t select_decode_fn(PointFieldType dtype_xyz, bool has_intensity, PointFieldType dtype_intensity, bool swap) {
+static decode_fn_t select_decode_fn(PointFieldType dtype_xyz, bool has_intensity,
+                                    PointFieldType dtype_intensity, bool swap, bool skip_nans) 
+{
     int xi = static_cast<int>(dtype_xyz) - PF_INT8;
     if (xi < 0 || static_cast<size_t>(xi) >= kXyzTypesSize) {
         return nullptr;
@@ -147,7 +160,9 @@ static decode_fn_t select_decode_fn(PointFieldType dtype_xyz, bool has_intensity
         return nullptr;
     }
 
-    return (swap ? kTableSwap : kTableNoSwap)[xi][ii];
+    int skip_idx = skip_nans ? 1 : 0; 
+
+    return (swap ? kTableSwap : kTableNoSwap)[skip_idx][xi][ii];
 }
 
 
@@ -211,7 +226,7 @@ extern "C" __attribute__((unused)) PyObject* decode_xyz_intensity(PyObject* self
     const char* base = static_cast<const char*>(buf.get().buf);
     bool swap = (host_little_endian() == static_cast<bool>(is_bigendian));
 
-    decode_fn_t fn = select_decode_fn(dtype_xyz, has_intensity, dtype_intensity, swap);
+    decode_fn_t fn = select_decode_fn(dtype_xyz, has_intensity, dtype_intensity, swap, skip_nans);
     if (!fn) {
         PyErr_SetString(PyExc_ValueError, "Unsupported dtype combination.");
         return nullptr;
@@ -230,7 +245,7 @@ extern "C" __attribute__((unused)) PyObject* decode_xyz_intensity(PyObject* self
 
     Py_ssize_t count;
     Py_BEGIN_ALLOW_THREADS
-    count = fn(base, n_points, point_step, ox, oy, oz, oi, static_cast<bool>(skip_nans), xyz_data, i_data);
+    count = fn(base, n_points, point_step, ox, oy, oz, oi, xyz_data, i_data);
     Py_END_ALLOW_THREADS
 
     if (count != n_points) {
