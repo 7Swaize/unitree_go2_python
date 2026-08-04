@@ -46,7 +46,7 @@ FORCE_INLINE T byteswap_val(T v) {
 }
 
 template <Numeric T, bool Swap>
-FORCE_INLINE T read_val(const void* p) {
+FORCE_INLINE T read_val(const void* RESTRICT p) {
     T v; 
     std::memcpy(&v, p, sizeof(T));
     if constexpr (Swap) {
@@ -65,20 +65,19 @@ using decode_fn_t = Py_ssize_t (*)(
 
 
 template <Numeric TXyz, NumericOrSpecial<NoIntensity> TInten, bool Swap>
-static Py_ssize_t decode_loop(const char* base, Py_ssize_t n_points, int point_step,
+static Py_ssize_t decode_loop(const char* RESTRICT base, Py_ssize_t n_points, int point_step,
                                int ox, int oy, int oz, int oi, bool skip_nans,
                                float* RESTRICT xyz_data, float* RESTRICT i_data)
 {
     constexpr bool has_intensity = !std::is_same_v<TInten, NoIntensity>;
     
     Py_ssize_t count = 0;
-    const char* p = base;
-    for (Py_ssize_t idx = 0; idx < n_points; idx++, p += point_step) { 
+    for (Py_ssize_t idx = 0; idx < n_points; idx++) { 
+        const char* RESTRICT p = base + idx * point_step;
         float x = static_cast<float>(read_val<TXyz, Swap>(p + ox));
         float y = static_cast<float>(read_val<TXyz, Swap>(p + oy));
         float z = static_cast<float>(read_val<TXyz, Swap>(p + oz));
     
-
         float inten = 0.0f;
         if constexpr (has_intensity) {
             inten = static_cast<float>(read_val<TInten, Swap>(p + oi));

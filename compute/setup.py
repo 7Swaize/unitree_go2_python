@@ -29,6 +29,7 @@ ext_modules = [
             "-O3",
             "-DNDEBUG",
             "-flto",
+            "-fvisibility=hidden",
             "-march=native",
             "-Wall"
         ],
