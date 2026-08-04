@@ -122,29 +122,29 @@ consteval decode_fn_t make_fn() {
 }
 
 template <bool Swap, bool SkipNans, std::size_t Xi, std::size_t... Iis>
-consteval auto make_dim3(std::index_sequence<Iis...>) {
+consteval auto decode_permute_make_dim3(std::index_sequence<Iis...>) {
     return std::array{
         make_fn<Swap, SkipNans, Xi, Iis>()...
     };
 }
 
 template <bool Swap, bool SkipNans, std::size_t... Xis>
-consteval auto make_dim2(std::index_sequence<Xis...>) {
+consteval auto decode_permute_make_dim2(std::index_sequence<Xis...>) {
     return std::array{
-        make_dim3<Swap, SkipNans, Xis>(std::make_index_sequence<kIntenTypesSize>{})...
+        decode_permute_make_dim3<Swap, SkipNans, Xis>(std::make_index_sequence<kIntenTypesSize>{})...
     };
 }
 
 template <bool Swap>
-consteval auto make_dim1() {
+consteval auto decode_permute_make_dim1() {
     return std::array{
-        make_dim2<Swap, false>(std::make_index_sequence<kXyzTypesSize>{}),
-        make_dim2<Swap, true>(std::make_index_sequence<kXyzTypesSize>{})
+        decode_permute_make_dim2<Swap, false>(std::make_index_sequence<kXyzTypesSize>{}),
+        decode_permute_make_dim2<Swap, true>(std::make_index_sequence<kXyzTypesSize>{})
     };
 }
 
-constexpr auto kTableNoSwap = make_dim1<false>();
-constexpr auto kTableSwap = make_dim1<true>();
+constexpr auto kTableNoSwap = decode_permute_make_dim1<false>();
+constexpr auto kTableSwap = decode_permute_make_dim1<true>();
 
 
 static decode_fn_t select_decode_fn(PointFieldType dtype_xyz, bool has_intensity,
