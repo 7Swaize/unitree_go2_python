@@ -1,9 +1,9 @@
 # Project Structure
 
 ```text
-├── c_extensions
+├── compute
 │   └── src
-│       ├── pc_utils
+│       ├── fast_pointcloud
 │       └── utils
 ├── docs
 │   ├── internal
@@ -54,7 +54,7 @@
 └── scripts
 ```
 
-`c_extensions/` - Lidar filtering and decoding utilities written in C.
+`compute/` - Python-callable utilities written in C++.
 
 `docs/internal/` - Markdown files for building API documentation. \
 `docs/internal/api/` - Markdown files for building student-facing API documentation. \
