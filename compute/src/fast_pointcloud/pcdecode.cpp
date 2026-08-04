@@ -10,9 +10,9 @@
 #include <tuple>
 
 #include "methods.h"
-#include "utils/compiler.hpp"
-#include "utils/raii.hpp"
-#include "utils/typing.hpp"
+#include "compiler.hpp"
+#include "raii.hpp"
+#include "typing.hpp"
 
 namespace pcdecode {
 

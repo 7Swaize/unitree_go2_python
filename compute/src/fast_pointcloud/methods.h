@@ -3,6 +3,8 @@
 
 #include <Python.h>
 
+extern "C" __attribute__((unused)) PyObject* decode_xyz_intensity(PyObject* self, PyObject* args);
+
 // https://docs.python.org/3/extending/extending.html#the-module-s-method-table-and-initialization-function
 #define FAST_PC_DECODE_METHODS \
     { \

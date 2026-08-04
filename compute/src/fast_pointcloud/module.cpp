@@ -4,7 +4,7 @@
 #include <numpy/arrayobject.h>
 
 #include "methods.h"
-#include "utils/raii.hpp"
+#include "raii.hpp"
 
 
 extern "C" PyObject* decode_xyz_intensity(PyObject*, PyObject*);
@@ -50,7 +50,7 @@ static PyMethodDef module_methods[] = {
 static struct PyModuleDef moduledef = {
     PyModuleDef_HEAD_INIT,
     "fast_pointcloud",
-    "Fast pointcloud decode",
+    "Fast PointCloud2 XYZ(+intensity) decoder",
     -1,
     module_methods
 };
