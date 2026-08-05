@@ -140,7 +140,7 @@ class LidarDecoderNode(Node):
                     msg,
                     field_names=["x", "y", "z", "intensity"],
                     skip_nans=self._config.skip_nans
-                ).astype(np.float32)
+                ).astype(np.float32, copy=False)
 
                 xyz = data[:, :3]
                 intensity = data[:, 3]
@@ -149,7 +149,7 @@ class LidarDecoderNode(Node):
                     msg,
                     field_names=["x", "y", "z"],
                     skip_nans=self._config.skip_nans
-                ).astype(np.float32)
+                ).astype(np.float32, copy=False)
                 intensity = None
 
             self._send_to_bridge(xyz, intensity, msg.header)
