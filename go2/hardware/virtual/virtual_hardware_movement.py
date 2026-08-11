@@ -65,7 +65,6 @@ class VirtualHardwareMovement(HardwareInterfaceMovement):
     def _move(self, vx: float, vy: float, vyaw: float) -> None:
         sample = self._floatargs_client.loan_uninit()
         sample.user_header().contents.command = SportCommand.MOVE
-        sample.user_header().contents.track = True
         sample = sample.write_payload(
             FloatArgsData_(arg1=vx, arg2=vy, arg3=vyaw)
         )
@@ -78,7 +77,6 @@ class VirtualHardwareMovement(HardwareInterfaceMovement):
     def _stand_up(self) -> None:
         sample = self._noargs_client.loan_uninit()
         sample.user_header().contents.command = SportCommand.STAND_UP
-        sample.user_header().contents.track = True
         sample = sample.write_payload(
             NoArgsData_(null=0)
         )
@@ -91,7 +89,6 @@ class VirtualHardwareMovement(HardwareInterfaceMovement):
     def _stand_down(self) -> None:
         sample = self._noargs_client.loan_uninit()
         sample.user_header().contents.command = SportCommand.STAND_DOWN
-        sample.user_header().contents.track = True
         sample = sample.write_payload(
             NoArgsData_(null=0)
         )
@@ -105,7 +102,6 @@ class VirtualHardwareMovement(HardwareInterfaceMovement):
     def _stop_move(self) -> None:
         sample = self._noargs_client.loan_uninit()
         sample.user_header().contents.command = SportCommand.STOP_MOVE
-        sample.user_header().contents.track = True
         sample = sample.write_payload(
             NoArgsData_(null=0)
         )
@@ -119,7 +115,6 @@ class VirtualHardwareMovement(HardwareInterfaceMovement):
     def _damp(self) -> None:
         sample = self._noargs_client.loan_unint()
         sample.user_header().contents.command = SportCommand.DAMP
-        sample.user_header().contents.track = True
         sample = sample.write_payload(
             NoArgsData_(null=0)
         )
@@ -132,7 +127,6 @@ class VirtualHardwareMovement(HardwareInterfaceMovement):
     def _balance_stand(self) -> None:
         sample = self._noargs_client.loan_uninit()
         sample.user_header().contents.command = SportCommand.BALANCE_STAND
-        sample.user_header().contents.track = True
         sample = sample.write_payload(
             NoArgsData_(null=0)
         )
