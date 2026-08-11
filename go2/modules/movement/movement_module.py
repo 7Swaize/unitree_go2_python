@@ -37,18 +37,18 @@ class MovementModule(DogModule):
     @override
     def _initialize(self) -> None:
         """
-        Prepare the movement module for use. This is called internally,
-        and should not be called directly by users.
+        Prepare the movement module for use. This is called internally, and should not be called directly by users.
 
-        This marks the module as initialized. It must be called
-        before issuing movement commands.
+        This marks the module as initialized. It must be called before issuing movement commands.
         """
         self._initialized = True
 
     def move(self, x: float = 0.0, y: float = 0.0, yaw: float = 0.0) -> None:
         """
         Move the robot forward/backward, laterally, and rotate about its vertical axis.
-
+        When executing in either mode, as specified in the official Unitree documentation,
+        the latest `move` command is maintained for 1 second.
+        
         Parameters
         ----------
         x : float, optional
@@ -64,7 +64,6 @@ class MovementModule(DogModule):
         Notes
         -----
         - Translational movements are relative to the robot's current orientation.
-        - Translation and yaw rotation are executed as a single relative motion.
         """
         x = max(-self.max_translation, min(x, self.max_translation))
         y = max(-self.max_translation, min(y, self.max_translation))
@@ -74,10 +73,6 @@ class MovementModule(DogModule):
     def stand_up(self) -> None:
         """
         Command the robot to stand up.
-
-        Notes
-        -----
-        - It's best practice to wait a second after standing up before issuing movement commands.
         """
         self.hardware._stand_up()
 
@@ -93,7 +88,7 @@ class MovementModule(DogModule):
 
         Notes
         -----
-        - Can be called at any time to halt translation and rotation. Can be used to clear internal command buffer.
+        - Can be called at any time to halt translation and rotation.
         """
         self.hardware._stop_move()
 
