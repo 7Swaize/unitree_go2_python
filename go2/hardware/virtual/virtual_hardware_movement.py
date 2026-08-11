@@ -113,7 +113,7 @@ class VirtualHardwareMovement(HardwareInterfaceMovement):
 
     @override
     def _damp(self) -> None:
-        sample = self._noargs_client.loan_unint()
+        sample = self._noargs_client.loan_uninit()
         sample.user_header().contents.command = SportCommand.DAMP
         sample = sample.write_payload(
             NoArgsData_(null=0)
