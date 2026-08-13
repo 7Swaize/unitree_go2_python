@@ -53,8 +53,12 @@ class VirtualCameraSource(CameraSource):
             h, w = msg.height, msg.width
 
             # I am more aggressive with the copy here to immediately allow a DEC_REF and the data to be freed in shared memory.
-            rgb = cv2.cvtColor(np.array(msg.rgb_data, copy=True, dtype=np.uint8 ).reshape((h, w, 3))[::-1], cv2.COLOR_RGB2BGR)
-            depth = np.array(msg.depth_data, copy=True, dtype=np.uint16).reshape((h, w))[::-1]
+            # However, its still one copy each.
+            raw_rgb = np.asarray(msg.rgb_data, dtype=np.uint8).reshape((h, w, 3))
+            rgb = cv2.cvtColor(raw_rgb[::-1], cv2.COLOR_RGB2BGR) # copy
+
+            raw_depth = np.asarray(msg.depth_data, dtype=np.uint16).reshape((h, w))
+            depth = np.ascontiguousarray(raw_depth[::-1]) # copy 
 
             self._latest_frames = (rgb, depth)  # atomic under GIL
 

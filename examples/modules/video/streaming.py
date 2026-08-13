@@ -1,24 +1,25 @@
 import cv2
 import numpy as np
 
-from go2.core import Go2Controller, ModuleType, HardwareType
-from go2.modules.video import CameraSourceFactory, FrameResult
+from go2.core import ModuleType, HardwareType, VirtualGo2Controller, create_controller
+from go2.modules.video import CameraSourceFactory
 
 
-def create_controller() -> Go2Controller:
+def init_controller() -> VirtualGo2Controller:
     # Create a Go2 Controller instance to access all provided funtionalities.
-    # Here, we choose HardwareType.NATIVE because we want movements commands to be executed on the actual robot.
-    controller = Go2Controller(hardware_type=HardwareType.NATIVE)
+    # Here, we pass HardwareType.VIRTUAL because we want to execute commands with respect to the simulator.
+    # It's recommended to use the 'create_controller' factory method to create the controller (as shown below).
+    controller = create_controller(hardware_type=HardwareType.VIRTUAL)
 
     # The VIDEO module is not a default module on the controller. Therefore, we must add it explicitly.
     # The module contructor takes in a 'camera_source' target where we say when camera we want to read frames from.
-    # Here, we create an native camera to read frames from the Unitree Go2's internal camera.
-    controller.add_module(ModuleType.VIDEO, camera_source=CameraSourceFactory.create_native_camera())
+    # Here, we create an external camera to read frames from via OpenCV
+    controller.add_module(ModuleType.VIDEO, camera_source=CameraSourceFactory.create_opencv_camera(0))
 
     return controller
 
 
-def start_streaming(controller: Go2Controller) -> None:
+def start_streaming(controller: VirtualGo2Controller) -> None:
     # Start the streaming server - only accessible on LAN devices
     controller.video.start_stream_server()
 
@@ -28,7 +29,9 @@ def start_streaming(controller: Go2Controller) -> None:
 
 if __name__ == "__main__":
     # Create a controller instance
-    controller = create_controller()
+    controller = init_controller()
+
+    start_streaming(controller)
 
     while True:
         # Get a 'FrameResult' object from the video module.
