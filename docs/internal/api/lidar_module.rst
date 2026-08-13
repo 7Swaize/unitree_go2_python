@@ -10,7 +10,19 @@ You can also submit a feature request on the main `GitHub <https://github.com/7S
 and it will be considered for future updates.
 
 
-.. automodule:: go2.modules.lidar.lidar_module
+.. autoclass:: go2.modules.lidar.lidar_module.LIDARModule
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+
+.. autoclass:: go2.modules.lidar.native_lidar_module.NativeLIDARModule
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+
+.. autoclass:: go2.modules.lidar.virtual_lidar_module.VirtualLIDARModule
    :members:
    :undoc-members:
    :show-inheritance:

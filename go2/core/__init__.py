@@ -1,7 +1,6 @@
-from ..hardware.hardware_type import HardwareType
 from .controller import Go2Controller
-from .registry import ModuleRegistry, ModuleType, ExecutionMode
 from .factory import create_controller
+from .registry import ModuleRegistry, ModuleType, ExecutionMode, HardwareType
 
 
 __all__ = [

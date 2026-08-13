@@ -15,11 +15,10 @@ from ..modules.input import InputModule
 from ..modules.movement import NativeMovementModule, VirtualMovementModule
 from ..modules.ocr import OCRModule
 from ..modules.video import VideoModule
-from ..modules.lidar import LIDARModule
-from ..hardware.hardware_type import HardwareType
+from ..modules.lidar import NativeLIDARModule, VirtualLIDARModule
 from ..logging import get_logger
 from .module import DogModule
-from .registry import ModuleRegistry, ModuleType, ExecutionMode
+from .registry import ModuleRegistry, ModuleType, ExecutionMode, HardwareType
 
 logger = get_logger(__name__)
 
@@ -210,19 +209,6 @@ class Go2Controller(ABC):
         return self._get_module(ModuleType.OCR, OCRModule)
 
 
-    @property
-    def lidar(self) -> InputModule:
-        """
-        Access the LIDAR control module.
-
-        Raises
-        ------
-        RuntimeError
-            If the module is not loaded or shutdown has been requested.
-        """
-        return self._get_module(ModuleType.LIDAR, LIDARModule)
-
-
     def is_shutdown_requested(self) -> bool:
         """Check if shutdown has been requested"""
         return self._shutdown_event.is_set()
@@ -339,6 +325,7 @@ class NativeGo2Controller(Go2Controller):
                 "emergency_stop"
             )
 
+
     @property
     def movement(self) -> NativeMovementModule:
         """
@@ -365,6 +352,19 @@ class NativeGo2Controller(Go2Controller):
         return self._get_module(ModuleType.INPUT, InputModule)
 
 
+    @property
+    def lidar(self) -> InputModule:
+        """
+        Access the native, LIDAR control module.
+
+        Raises
+        ------
+        RuntimeError
+            If the module is not loaded or shutdown has been requested.
+        """
+        return self._get_module(ModuleType.LIDAR, NativeLIDARModule)
+
+
 
 class VirtualGo2Controller(Go2Controller):
     """
@@ -383,6 +383,7 @@ class VirtualGo2Controller(Go2Controller):
     def _register_default_modules(self) -> None:
         self.add_module(ModuleType.MOVEMENT)
 
+
     @property
     def movement(self) -> VirtualMovementModule:
         """
@@ -394,3 +395,16 @@ class VirtualGo2Controller(Go2Controller):
             If the module is not loaded or shutdown has been requested.
         """
         return self._get_module(ModuleType.MOVEMENT, VirtualMovementModule)
+
+
+    @property
+    def lidar(self) -> InputModule:
+        """
+        Access the virtual, LIDAR control module.
+
+        Raises
+        ------
+        RuntimeError
+            If the module is not loaded or shutdown has been requested.
+        """
+        return self._get_module(ModuleType.LIDAR, VirtualLIDARModule)

@@ -5,11 +5,10 @@ from typing import Any, Dict, Generic, Optional, Type, TypeVar, Callable
 from .module import DogModule
 from ..modules.audio import AudioModule
 from ..modules.input import InputModule
-from ..modules.lidar import LIDARModule
+from ..modules.lidar import LIDARModule, NativeLIDARModule, VirtualLIDARModule
 from ..modules.movement import MovementModule, NativeMovementModule, VirtualMovementModule
 from ..modules.ocr import OCRModule
 from ..modules.video import VideoModule
-from ..hardware.hardware_type import HardwareType
 
 
 T = TypeVar('T', bound=DogModule)
@@ -39,6 +38,13 @@ class ModuleType(Enum):
     OCR = auto()
     AUDIO = auto()
     LIDAR = auto()
+
+
+
+class HardwareType(Enum):
+    """Enumeration passed upon creation of a :class:`~core.controller.Go2Controller` instance."""
+    NATIVE = auto() #: Commands should act upon an actual Unitree-Go2 robot.
+    VIRTUAL = auto() #: Commands should act upon the simulator (launched on controller creation in `VIRTUAL`` mode).
 
 
 
@@ -158,6 +164,9 @@ class ModuleRegistry:
             "LIDAR Capture",
             requires_native_hardware=False,
             requires_advanced_execution=True,
+            class_resolver=lambda ht: (
+                NativeLIDARModule if ht == HardwareType.NATIVE else VirtualLIDARModule
+            )
         ))
 
 
