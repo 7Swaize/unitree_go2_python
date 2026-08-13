@@ -148,7 +148,7 @@ class Go2Controller(ABC):
                 "[Controller] For more information see here: https://go2-control.readthedocs.io/en/latest/api/core.html#go2.core.registry.ExecutionMode"
             )
 
-        module: DogModule = descriptor._create_instance(self._hardware_type, **kwargs)
+        module: DogModule = descriptor.create_instance(self._hardware_type, **kwargs)
         module._initialize()
         
         self._modules[module_type] = module
@@ -353,7 +353,7 @@ class NativeGo2Controller(Go2Controller):
 
 
     @property
-    def lidar(self) -> InputModule:
+    def lidar(self) -> NativeLIDARModule:
         """
         Access the native, LIDAR control module.
 
@@ -375,7 +375,7 @@ class VirtualGo2Controller(Go2Controller):
     """
 
     def __init__(self, execution_mode: ExecutionMode = ExecutionMode.BASIC) -> None:
-        super().__init__(HardwareType.NATIVE, execution_mode)
+        super().__init__(HardwareType.VIRTUAL, execution_mode)
         self._register_default_modules()
 
 
@@ -398,7 +398,7 @@ class VirtualGo2Controller(Go2Controller):
 
 
     @property
-    def lidar(self) -> InputModule:
+    def lidar(self) -> VirtualLIDARModule:
         """
         Access the virtual, LIDAR control module.
 

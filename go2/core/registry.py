@@ -66,7 +66,7 @@ class ModuleDescriptor(Generic[T]):
     def _resolve_class(self, hardware_type: HardwareType) -> Type[T]:
         return self.class_resolver(hardware_type) if self.class_resolver else self.module_class
  
-    def _create_instance(self, hardware_type: HardwareType, *args: Any, **kwargs: Any) -> T:
+    def create_instance(self, hardware_type: HardwareType, *args: Any, **kwargs: Any) -> T:
         return self._resolve_class(hardware_type)(*args, **kwargs)
     
 

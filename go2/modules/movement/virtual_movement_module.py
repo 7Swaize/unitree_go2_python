@@ -31,6 +31,8 @@ class VirtualCommandHandle:
     artificially elevated, which prevents the GC from collecting the handle and, in turn, prevents the resources
     it owns from being freed.
     """
+    __slots__ = ("_pending_response", "_node", "_cycle_time")
+
     def __init__(self, pending_response: iox2.PendingResponse, node: iox2.Node, cycle_time: iox2.Duration) -> None:
         self._pending_response = pending_response
         self._node = node
@@ -117,7 +119,7 @@ class VirtualMovementModule(MovementModule):
             FloatArgsData_(arg1=vx, arg2=vy, arg3=vyaw)
         )
 
-        return VirtualCommandHandle(sample.send())
+        return VirtualCommandHandle(sample.send(), self._node, self._cycle_time)
 
     @override
     def stand_up(self) -> VirtualCommandHandle:
@@ -135,7 +137,7 @@ class VirtualMovementModule(MovementModule):
             NoArgsData_(null=0)
         )
 
-        return VirtualCommandHandle(sample.send())
+        return VirtualCommandHandle(sample.send(), self._node, self._cycle_time)
 
     @override
     def stand_down(self) -> VirtualCommandHandle:
@@ -153,7 +155,7 @@ class VirtualMovementModule(MovementModule):
             NoArgsData_(null=0)
         )
 
-        return VirtualCommandHandle(sample.send())
+        return VirtualCommandHandle(sample.send(), self._node, self._cycle_time)
 
     @override
     def stop_move(self) -> VirtualCommandHandle:
@@ -169,7 +171,7 @@ class VirtualMovementModule(MovementModule):
             NoArgsData_(null=0)
         )
 
-        return VirtualCommandHandle(sample.send())
+        return VirtualCommandHandle(sample.send(), self._node, self._cycle_time)
 
     @override
     def damp(self) -> VirtualCommandHandle:
@@ -187,7 +189,7 @@ class VirtualMovementModule(MovementModule):
             NoArgsData_(null=0)
         )
 
-        return VirtualCommandHandle(sample.send())
+        return VirtualCommandHandle(sample.send(), self._node, self._cycle_time)
 
     @override
     def balance_stand(self) -> VirtualCommandHandle:
@@ -201,8 +203,8 @@ class VirtualMovementModule(MovementModule):
             NoArgsData_(null=0)
         )
 
-        return VirtualCommandHandle(sample.send())
+        return VirtualCommandHandle(sample.send(), self._node, self._cycle_time)
 
     @override
     def _shutdown(self) -> None:
-        pass
+        self.damp()
