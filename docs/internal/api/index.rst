@@ -41,17 +41,6 @@ These modules must be **explicitly added** using :meth:`Go2Controller.add_module
    ocr_module
 
 
-State Machine & Architecture
-----------------------------
-
-For building behavior using a state machine pattern.
-
-.. toctree::
-   :maxdepth: 2
-
-   robot_state
-
-
 Simulator Scene Configuration
 -----------------------------
 
