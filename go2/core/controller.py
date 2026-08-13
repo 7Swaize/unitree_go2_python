@@ -1,25 +1,27 @@
 import os
+import sys
 import signal
 import threading
-from typing import Callable, List, Dict
+from abc import ABC, abstractmethod
+from types import FrameType
+from typing import Callable, List, Dict, TypeVar, Type, Optional, Any
+from typing_extensions import override
 
-from .module import DogModule
-from .registry import ModuleRegistry, ModuleType, ExecutionMode
+from unitree_sdk2py.core.channel import ChannelFactoryInitialize
+
 from ..modules.input import InputSignal
 from ..modules.audio import AudioModule
 from ..modules.input import InputModule
-from ..modules.movement import MovementModule
+from ..modules.movement import NativeMovementModule, VirtualMovementModule
 from ..modules.ocr import OCRModule
 from ..modules.video import VideoModule
 from ..modules.lidar import LIDARModule
 from ..hardware.hardware_type import HardwareType
-from ..hardware.hardware_interface_movement import HardwareInterfaceMovement
-from ..hardware.native.native_hardware_movement import NativeHardwareMovement
-from ..hardware.virtual.virtual_hardware_movement import VirtualHardwareMovement
 from ..logging import get_logger
+from .module import DogModule
+from .registry import ModuleRegistry, ModuleType, ExecutionMode
 
 logger = get_logger(__name__)
-
 
 # TTS: https://medium.com/@vndee.huynh/build-your-own-voice-assistant-and-run-it-locally-whisper-ollama-bark-c80e6f815cba
 # Digging into Dog: https://www.darknavy.org/darknavy_insight/the_jailbroken_unitree_robot_dog
@@ -31,11 +33,13 @@ logger = get_logger(__name__)
 # TETHERING + ROS2 SETUP: https://www.youtube.com/watch?v=Q_dqPLJDPms
 
 
-class Go2Controller:
+T = TypeVar("T", bound=DogModule)
+
+class Go2Controller(ABC):
     """    
     Primary control interface for the Unitree Go2 robot.
 
-    This class is the **main entry point** that users interact with.
+    This is the shared base for :class:`NativeGo2Controller` and :class:`VirtualGo2Controller`.
     It manages hardware initialization, module lifecycles, safety checks, and shutdown.
 
     Modules are accessed via properties rather than direct instantiation.
@@ -50,17 +54,17 @@ class Go2Controller:
     --------
     DogModule
     ModuleRegistry
+    NativeGo2Controller
+    VirtualGo2Controller
     """
-
-    def __init__(self, hardware_type: HardwareType, execution_mode: ExecutionMode=ExecutionMode.BASIC) -> None:
+    def __init__(self, hardware_type: HardwareType, execution_mode: ExecutionMode = ExecutionMode.BASIC) -> None:
         """
-        Create a new controller instance.
-
         Parameters
         ----------
-        use_sdk : bool or None
-            If ``True``, forces use of the Unitree SDK.
-            If ``False``, forces simulation mode.
+        hardware_type : HardwareType
+            Selects the backend (NATIVE or VIRTUAL). Set implicitly by the concrete subclass.
+        execution_mode : ExecutionMode
+            Governs which optional modules (e.g. LIDAR) are available.
 
         Raises
         ------
@@ -70,8 +74,8 @@ class Go2Controller:
         self._hardware_type = hardware_type
         self._execution_mode = execution_mode
 
-        self._emit_execution_mode_info(execution_mode)
-        
+        self._emit_execution_mode_info()
+
         self._shutdown_event = threading.Event()
         self._shutdown_lock = threading.Lock()
         self._cleanup_callbacks_pre_module_shutdown: List[Callable[[], None]] = []
@@ -79,28 +83,18 @@ class Go2Controller:
 
         self._install_signal_handlers()
 
-        self._hardware: HardwareInterfaceMovement = (
-            NativeHardwareMovement() if hardware_type == HardwareType.NATIVE else VirtualHardwareMovement()
-        )
-        self._hardware._initialize()
-        
-
         self._modules: Dict[ModuleType, DogModule] = {}
-        self._register_default_modules()
-        self._initialize_input_bindings()
 
-        logger.info(f"[Controller] Initialized in {'NATIVE' if hardware_type == HardwareType.NATIVE else 'SIMULATION'} mode\n")
 
-    
-    def _emit_execution_mode_info(self, exec_mode: ExecutionMode):
-        logger.info(f"[Controller] Executing in {'BASIC' if exec_mode == ExecutionMode.BASIC else 'ADVANCED'} execution mode.")
-        if exec_mode == ExecutionMode.BASIC:
+    def _emit_execution_mode_info(self) -> None:
+        logger.info(f"[Controller] Executing in {'BASIC' if self._execution_mode == ExecutionMode.BASIC else 'ADVANCED'} execution mode.")
+        if self._execution_mode == ExecutionMode.BASIC:
             logger.warning("[Controller] LIDAR functionalities not available in 'BASIC' execution")
 
 
     # Automatic shutdown on exception incase its not done by users
     def _install_signal_handlers(self) -> None:
-        def handler(signum, frame):
+        def handler(signum: int, frame: Optional[FrameType]):
             self.safe_shutdown()
 
             signal.signal(signum, signal.SIG_DFL) # Hands control back to default handler
@@ -110,23 +104,12 @@ class Go2Controller:
         signal.signal(signal.SIGTERM, handler)
 
 
-    def _initialize_input_bindings(self) -> None:
-        if self._hardware_type == HardwareType.NATIVE:
-            self.input.register_callback(
-                InputSignal.BUTTON_A,
-                lambda _: self._shutdown_event.set(),
-                "emergency_stop"
-            )
-
-
+    @abstractmethod
     def _register_default_modules(self) -> None:
-        self.add_module(ModuleType.MOVEMENT, hardware=self._hardware)
+        pass
 
-        if self._hardware_type == HardwareType.NATIVE:
-            self.add_module(ModuleType.INPUT)
-            
 
-    def add_module(self, module_type: ModuleType, **kwargs) -> None:
+    def add_module(self, module_type: ModuleType, **kwargs: Any) -> None:
         """
         Add a module to the controller. Modules are initialized immediately upon addition.
         Manual module initialization is discouraged and should not be attempted.
@@ -144,9 +127,9 @@ class Go2Controller:
         Raises
         ------
         ValueError
-            If the module type is not registered.
-        ValueError
-            If the module type depends on native hardware support, but the controller is not set up to provide it.
+            If the module type is not registered, requires native hardware support
+            the controller doesn't provide, or requires advanced execution mode
+            the controller isn't running under.
         """
         if module_type in self._modules:
             logger.info(f"[Controller] Module type '{module_type.name}' is already loaded. Returning existing instance.")
@@ -156,27 +139,37 @@ class Go2Controller:
         if descriptor is None:
             raise ValueError(f"[Controller] Module type '{module_type.name}' is not registered")
         
-        if descriptor._requires_native_hardware and self._hardware_type != HardwareType.NATIVE:
+        if descriptor.requires_native_hardware and self._hardware_type != HardwareType.NATIVE:
             raise ValueError(f"[Controller] Module type '{module_type.name}' requires native hardware support")
 
-        if descriptor._requires_advanced_execution and self._execution_mode != ExecutionMode.ADVANCED:
+        if descriptor.requires_advanced_execution and self._execution_mode != ExecutionMode.ADVANCED:
             raise ValueError(
                 f"[Controller] Module type '{module_type.name}' requires advanced execution mode. "
                 "You may need to install ROS2 Humble libraries.\n"
                 "[Controller] For more information see here: https://go2-control.readthedocs.io/en/latest/api/core.html#go2.core.registry.ExecutionMode"
             )
+
+        module: DogModule = descriptor._create_instance(self._hardware_type, **kwargs)
+        module._initialize()
         
-        module: DogModule = descriptor._create_instance(**kwargs)
         self._modules[module_type] = module
 
-        module._set_hardware_internal(hardware_type=self._hardware_type)
-        module._initialize()
-    
 
     def has_module(self, module_type: ModuleType) -> bool:
         """Check whether a module is currently loaded."""
         return module_type in self._modules
-    
+
+
+    def _get_module(self, module_type: ModuleType, expected: Type[T]) -> T:
+        module = self._modules.get(module_type)
+
+        if not isinstance(module, expected):
+            raise RuntimeError(f"{expected.__name__} not loaded")
+        if self.is_shutdown_requested():
+            logger.debug(f"Cannot access {expected.__name__} after shutdown has been requested")
+
+        return module
+
 
     @property
     def video(self) -> VideoModule:
@@ -188,55 +181,8 @@ class Go2Controller:
         RuntimeError
             If the module is not loaded or shutdown has been requested.
         """
-        module = self._modules.get(ModuleType.VIDEO)
-        if not isinstance(module, VideoModule):
-            raise RuntimeError("Video module not loaded")
-        
-        if self.is_shutdown_requested():
-            raise RuntimeError("Cannot access Video module after shutdown has been requested")
-        
-        return module
-    
+        return self._get_module(ModuleType.VIDEO, VideoModule)
 
-    @property
-    def movement(self) -> MovementModule:
-        """
-        Access the movement control module.
-
-        Raises
-        ------
-        RuntimeError
-            If the module is not loaded or shutdown has been requested.
-        """
-        module = self._modules.get(ModuleType.MOVEMENT)
-        if not isinstance(module, MovementModule):
-            raise RuntimeError("Movement module not loaded")
-        
-        if self.is_shutdown_requested():
-            raise RuntimeError("Cannot access Movement module after shutdown has been requested")
-
-        return module
-    
-
-    @property
-    def ocr(self) -> OCRModule:
-        """
-        Access the ocr control module.
-
-        Raises
-        ------
-        RuntimeError
-            If the module is not loaded or shutdown has been requested.
-        """
-        module = self._modules.get(ModuleType.OCR)
-        if not isinstance(module, OCRModule):
-            raise RuntimeError("OCR module not loaded")
-        
-        if self.is_shutdown_requested():
-            raise RuntimeError("Cannot access OCR module after shutdown has been requested")
-        
-        return module
-    
 
     @property
     def audio(self) -> AudioModule:
@@ -248,57 +194,41 @@ class Go2Controller:
         RuntimeError
             If the module is not loaded or shutdown has been requested.
         """
-        module = self._modules.get(ModuleType.AUDIO)
-        if not isinstance(module, AudioModule):
-            raise RuntimeError("Audio module not loaded")
-        
-        if self.is_shutdown_requested():
-            raise RuntimeError("Cannot access Audio module after shutdown has been requested")
-        
-        return module
-    
+        return self._get_module(ModuleType.AUDIO, AudioModule)
+
 
     @property
-    def input(self) -> InputModule:
+    def ocr(self) -> OCRModule:
         """
-        Access the input control module.
+        Access the OCR module.
 
         Raises
         ------
         RuntimeError
             If the module is not loaded or shutdown has been requested.
         """
-        module = self._modules.get(ModuleType.INPUT)
-        if not isinstance(module, InputModule):
-            raise RuntimeError("Input module not loaded")
-        
-        if self.is_shutdown_requested():
-            raise RuntimeError("Cannot access Input module after shutdown has been requested")
+        return self._get_module(ModuleType.OCR, OCRModule)
 
-        return module
-    
 
     @property
-    def lidar(self) -> LIDARModule:
+    def lidar(self) -> InputModule:
         """
-        Access the lidar control module.
+        Access the LIDAR control module.
 
         Raises
         ------
         RuntimeError
             If the module is not loaded or shutdown has been requested.
         """
-        module = self._modules.get(ModuleType.LIDAR)
-        if not isinstance(module, LIDARModule):
-            raise RuntimeError("LIDAR module not loaded")
-        
-        if self.is_shutdown_requested():
-            raise RuntimeError("Cannot access LIDAR module after shutdown has been requested")
-        
-        return module
-    
+        return self._get_module(ModuleType.LIDAR, LIDARModule)
 
-    def register_cleanup_callback_pre_module_shutdown(self, callback: Callable[[], None]):
+
+    def is_shutdown_requested(self) -> bool:
+        """Check if shutdown has been requested"""
+        return self._shutdown_event.is_set()
+
+
+    def register_cleanup_callback_pre_module_shutdown(self, callback: Callable[[], None]) -> None:
         """
         Register a cleanup callback to be executed during safe shutdown before modules are stopped and before hardware is released.
 
@@ -310,7 +240,7 @@ class Go2Controller:
         self._cleanup_callbacks_pre_module_shutdown.append(callback)
 
 
-    def register_cleanup_callback_post_module_shutdown(self, callback: Callable[[], None]):
+    def register_cleanup_callback_post_module_shutdown(self, callback: Callable[[], None]) -> None:
         """
         Register a cleanup callback to be executed during safe shutdown after modules are stopped, but before hardware is released.
 
@@ -319,19 +249,18 @@ class Go2Controller:
         callback : callable
             Zero-argument function to execute during shutdown.
         """
-        self._cleanup_callbacks_post_module_shutdown.append(callback)     
+        self._cleanup_callbacks_post_module_shutdown.append(callback)
 
 
-    def safe_shutdown(self):
+    def safe_shutdown(self) -> None:
         """
         Perform a coordinated and safe shutdown.
 
         This method:
-            - Stops movement immediately
             - Signals shutdown to all subsystems
             - Shuts down all modules
             - Executes registered cleanup callbacks
-            - Releases hardware resources
+            - Releases hardware resources   
 
         Important
         ---------
@@ -370,14 +299,98 @@ class Go2Controller:
                 except Exception:
                     logger.exception("[Controller] Cleanup callback failed")
             
-            try:
-                self._hardware._shutdown()
-            except Exception:
-                logger.exception("[Controller] Hardware shutdown failed")
-            
-            logger.info("[Controller] Shutdown complete")
+        logger.info("[Controller] Shutdown complete")
 
 
-    def is_shutdown_requested(self) -> bool:
-        """Check if shutdown has been requested"""
-        return self._shutdown_event.is_set()
+
+class NativeGo2Controller(Go2Controller):
+    """
+    Controller for a physical Go2 robot.
+
+    Exposes every module, including :attr:`input`, and returns :class:`NativeMovementModule`
+    from :attr:`movement`.
+    """
+
+    def __init__(self, execution_mode: ExecutionMode = ExecutionMode.BASIC) -> None:
+        super().__init__(HardwareType.NATIVE, execution_mode)
+        self._init_cyclonedds_services()
+        self._register_default_modules()
+        self._initialize_input_bindings()
+
+
+    def _init_cyclonedds_services() -> None:
+        if len(sys.argv) < 2:
+            ChannelFactoryInitialize(1, "lo")
+        else:
+            ChannelFactoryInitialize(0, sys.argv[1])
+
+
+    @override
+    def _register_default_modules(self) -> None:
+        self.add_module(ModuleType.MOVEMENT)
+        self.add_module(ModuleType.INPUT)
+
+
+    def _initialize_input_bindings(self) -> None:
+        if self._hardware_type == HardwareType.NATIVE:
+            self.input.register_callback(
+                InputSignal.BUTTON_A,
+                lambda _: self._shutdown_event.set(),
+                "emergency_stop"
+            )
+
+    @property
+    def movement(self) -> NativeMovementModule:
+        """
+        Access the native, movement control module.
+
+        Raises
+        ------
+        RuntimeError
+            If the module is not loaded or shutdown has been requested.
+        """
+        return self._get_module(ModuleType.MOVEMENT, NativeMovementModule)
+
+
+    @property
+    def input(self) -> InputModule:
+        """
+        Access the input control module.
+
+        Raises
+        ------
+        RuntimeError
+            If the module is not loaded or shutdown has been requested.
+        """
+        return self._get_module(ModuleType.INPUT, InputModule)
+
+
+
+class VirtualGo2Controller(Go2Controller):
+    """
+    Controller for the simulated Go2 (Mujoco).
+
+    Exposes every module except :attr:`~NativeGo2Controller.input` (no physical controller to bind to),
+    and returns :class:`VirtualMovementModule` from :attr:`movement`.
+    """
+
+    def __init__(self, execution_mode: ExecutionMode = ExecutionMode.BASIC) -> None:
+        super().__init__(HardwareType.NATIVE, execution_mode)
+        self._register_default_modules()
+
+
+    @override
+    def _register_default_modules(self) -> None:
+        self.add_module(ModuleType.MOVEMENT)
+
+    @property
+    def movement(self) -> VirtualMovementModule:
+        """
+        Access the virtual, movement control module.
+
+        Raises
+        ------
+        RuntimeError
+            If the module is not loaded or shutdown has been requested.
+        """
+        return self._get_module(ModuleType.MOVEMENT, VirtualMovementModule)

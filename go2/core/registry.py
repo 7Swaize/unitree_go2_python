@@ -1,12 +1,12 @@
 from dataclasses import dataclass
 from enum import Enum, auto
-from typing import Dict, Generic, Optional, Type, TypeVar
+from typing import Any, Dict, Generic, Optional, Type, TypeVar, Callable
 
 from .module import DogModule
 from ..modules.audio import AudioModule
 from ..modules.input import InputModule
 from ..modules.lidar import LIDARModule
-from ..modules.movement import MovementModule
+from ..modules.movement import MovementModule, NativeMovementModule, VirtualMovementModule
 from ..modules.ocr import OCRModule
 from ..modules.video import VideoModule
 from ..hardware.hardware_type import HardwareType
@@ -50,15 +50,18 @@ class ModuleDescriptor(Generic[T]):
     Contains all metadata required to construct and display a module in the system.
     """
 
-    _module_type: ModuleType  #: Enum identifying the module
-    _module_class: Type[T]  #: Concrete implementation class
-    _display_name: str  #: Human-readable name
-    _requires_native_hardware: bool = False  #: Whether this module requires native hardware support
-    _requires_advanced_execution: bool = False #: Whether this module requires an advanced execution mode
-    
-    def _create_instance(self, *args, **kwargs) -> T:
-        """Instantiate the module."""
-        return self._module_class(*args, **kwargs)
+    module_type: ModuleType  #: Enum identifying the module
+    module_class: Type[T]  #: Concrete implementation class
+    display_name: str  #: Human-readable name
+    requires_native_hardware: bool = False  #: Whether this module needs native hardware
+    requires_advanced_execution: bool = False  #: Whether this module needs advanced execution mode
+    class_resolver: Optional[Callable[[HardwareType], Type[T]]] = None #: Resolver used during resolution
+
+    def _resolve_class(self, hardware_type: HardwareType) -> Type[T]:
+        return self.class_resolver(hardware_type) if self.class_resolver else self.module_class
+ 
+    def _create_instance(self, hardware_type: HardwareType, *args: Any, **kwargs: Any) -> T:
+        return self._resolve_class(hardware_type)(*args, **kwargs)
     
 
 class ModuleRegistry:
@@ -74,10 +77,10 @@ class ModuleRegistry:
     - Modules are registered at startup.
     """
 
-    _descriptors: Dict[ModuleType, ModuleDescriptor] = {}
+    _descriptors: Dict[ModuleType, ModuleDescriptor[DogModule]] = {}
 
     @classmethod
-    def _register(cls, descriptor: ModuleDescriptor) -> None:
+    def _register(cls, descriptor: ModuleDescriptor[DogModule]) -> None:
         """
         Register a module descriptor.
 
@@ -86,78 +89,76 @@ class ModuleRegistry:
         descriptor : ModuleDescriptor
             Descriptor to register.
         """
-        cls._descriptors[descriptor._module_type] = descriptor
+        cls._descriptors[descriptor.module_type] = descriptor
 
     @classmethod
-    def get_descriptor(cls, module_type: ModuleType) -> Optional[ModuleDescriptor]:
+    def get_descriptor(cls, module_type: ModuleType) -> Optional[ModuleDescriptor[DogModule]]:
         """Retrieve the descriptor for a module type."""
         return cls._descriptors.get(module_type)
-
-    @classmethod
-    def get_class(cls, module_type: ModuleType) -> Optional[Type[DogModule]]:
-        """Retrieve the implementation class for a module type."""
-        descriptor = cls._descriptors.get(module_type)
-        return descriptor._module_class if descriptor else None
-
+ 
     @classmethod
     def is_registered(cls, module_type: ModuleType) -> bool:
         """Check whether a module type is registered."""
         return module_type in cls._descriptors
 
+    @classmethod
+    def _register_defaults(cls) -> None:
+        """
+        Register all default system modules.
+ 
+        Called automatically at import time to populate the module registry
+        with all built-in modules.
+        """
+        cls._register(ModuleDescriptor(
+            ModuleType.VIDEO,
+            VideoModule,
+            "Video Capture",
+            requires_native_hardware=False,
+            requires_advanced_execution=False,
+        ))
+ 
+        cls._register(ModuleDescriptor(
+            ModuleType.MOVEMENT,
+            MovementModule,
+            "Movement Control",
+            requires_native_hardware=False,
+            requires_advanced_execution=False,
+            class_resolver=lambda ht: (
+                NativeMovementModule if ht == HardwareType.NATIVE else VirtualMovementModule
+            ),
+        ))
+ 
+        cls._register(ModuleDescriptor(
+            ModuleType.OCR,
+            OCRModule,
+            "Optical Character Recognition",
+            requires_native_hardware=False,
+            requires_advanced_execution=False,
+        ))
+ 
+        cls._register(ModuleDescriptor(
+            ModuleType.AUDIO,
+            AudioModule,
+            "Text-to-Speech",
+            requires_native_hardware=False,
+            requires_advanced_execution=False,
+        ))
+ 
+        cls._register(ModuleDescriptor(
+            ModuleType.INPUT,
+            InputModule,
+            "Controller Input",
+            requires_native_hardware=True,
+            requires_advanced_execution=False,
+        ))
+ 
+        cls._register(ModuleDescriptor(
+            ModuleType.LIDAR,
+            LIDARModule,
+            "LIDAR Capture",
+            requires_native_hardware=False,
+            requires_advanced_execution=True,
+        ))
 
-def _register_all_default_modules():
-    """
-    Register all default system modules.
 
-    This function is called automatically at import time to populate the module registry with all built-in modules.
-    """
-    ModuleRegistry._register(ModuleDescriptor(
-        ModuleType.VIDEO,
-        VideoModule,
-        "Video Capture",
-        _requires_native_hardware=False,
-        _requires_advanced_execution=False
-    ))
-    
-    ModuleRegistry._register(ModuleDescriptor(
-        ModuleType.MOVEMENT,
-        MovementModule,
-        "Movement Control",
-        _requires_native_hardware=False,
-        _requires_advanced_execution=False
-    ))
-    
-    ModuleRegistry._register(ModuleDescriptor(
-        ModuleType.OCR,
-        OCRModule,
-        "Optical Character Recognition",
-        _requires_native_hardware=False,
-        _requires_advanced_execution=False,
-    ))
-    
-    ModuleRegistry._register(ModuleDescriptor(
-        ModuleType.AUDIO,
-        AudioModule,
-        "Text-to-Speech",
-        _requires_native_hardware=False,
-        _requires_advanced_execution=False
-    ))
-    
-    ModuleRegistry._register(ModuleDescriptor(
-        ModuleType.INPUT,
-        InputModule,
-        "Controller Input",
-        _requires_native_hardware=True,
-        _requires_advanced_execution=False
-    ))
-
-    ModuleRegistry._register(ModuleDescriptor(
-        ModuleType.LIDAR,
-        LIDARModule,
-        "LIDAR Capture",
-        _requires_native_hardware=False,
-        _requires_advanced_execution=True
-    ))
-
-
-_register_all_default_modules()
+ModuleRegistry._register_defaults()  # pylint: disable=protected-access
