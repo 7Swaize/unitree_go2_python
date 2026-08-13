@@ -15,7 +15,7 @@ class VirtualLIDARModule(LIDARModule):
             return
 
         if self._publish_hz < 5 or self._publish_hz > 100:
-            raise ValueError(f"publish_hz must be in the range [5, 100]; got {self._publish_hz}")
+            raise ValueError(f"Parameter 'publish_hz' must be in the range [5, 100]; got {self._publish_hz}")
 
         self._launch_bridge()
         self._initialized = True
