@@ -19,7 +19,7 @@ ext_modules = [
             os.path.join("src", "fast_pointcloud", "pcdecode.cpp")
         ],
         include_dirs=[
-            os.path.join("src", "fs_pointcloud"),
+            os.path.join("src", "fast_pointcloud"),
             os.path.join("src", "utils"),
         ],
         language="c++",
