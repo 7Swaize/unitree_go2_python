@@ -1,5 +1,5 @@
 #ifndef UTILS_COMPILER_HPP_
-#define UTILTS_COMPILER_HPP_
+#define UTILS_COMPILER_HPP_
 
 #if defined(__GNUC__) || defined(__clang__)
     #define RESTRICT __restrict__
