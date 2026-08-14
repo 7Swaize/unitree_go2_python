@@ -32,8 +32,8 @@ def read_sim_camera(frame_result: FrameResult) -> None:
 
         # Apply a heat colormap to the depth frame
         depth_colormap = cv2.applyColorMap(
-            cv2.convertScaleAbs(depth, alpha=0.03),
-            cv2.COLORMAP_JET
+            cv2.normalize(depth, None, 0, 255, cv2.NORM_MINMAX, dtype=cv2.CV_8UC1),
+            cv2.COLORMAP_JET,
         )
 
         combined = np.hstack((
