@@ -3,6 +3,8 @@ from typing import Callable
 
 
 class CallbackDispatcher:
+    __slots__ = ("_decoded_callbacks")
+    
     def __init__(self) -> None:
         self._decoded_callbacks: list[Callable[[int, np.ndarray], None]] = []
 
