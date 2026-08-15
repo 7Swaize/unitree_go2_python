@@ -1,7 +1,7 @@
 import numpy as np
 from enum import Enum, auto
 from collections.abc import Iterator
-from typing import Dict, List, Optional
+from typing import Dict, Optional
 from dataclasses import dataclass
 
 
