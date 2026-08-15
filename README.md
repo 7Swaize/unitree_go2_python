@@ -21,7 +21,7 @@ Below are sample files demonstrating how to progammatically interact with the vi
 - [OCR Examples](examples/modules/ocr/ocr.md) — Examples for working with the controller's OCR capabilties
 
 ### Advanced Examples
-- [Aruko Marker Examples](examples/aruko_markers//aruko_markers.md) — Examples for detecting and reacting to Aruko markers
+- [Aruco Marker Examples](examples/aruco_markers/aruco_markers.md) — Examples for detecting and reacting to Aruco markers
 - [Terrain Generator Examples](examples/terrain_generator/terrain_generator.md) — Examples for working with the simulator's terrain generation capabilties
 
 ### Getting Started

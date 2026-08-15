@@ -14,7 +14,7 @@
 │       └── install
 │           └── dependencies
 ├── examples
-│   ├── aruko_markers
+│   ├── aruco_markers
 │   ├── modules
 │   │   ├── movement
 │   │   ├── ocr
@@ -63,7 +63,7 @@
 `docs/public/` - Formatted documentation for students regarding the SDK itself.
 
 `examples/` - SDK usage examples. \
-`examples/aruko_markers/` - Examples for detecting and reacting to Aruko markers. \
+`examples/aruco_markers/` - Examples for detecting and reacting to Aruco markers. \
 `examples/modules/movement/` - Examples for working with the controller's movement capabilities. \
 `examples/modules/ocr/` - Examples for working with the controller's OCR capabilities. \
 `examples/modules/video/` - Examples for working with the controller's video capabilities. \

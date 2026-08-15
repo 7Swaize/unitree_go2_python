@@ -43,7 +43,7 @@ def get_fiducial_area_from_corners(c0, c1, c2, c3):
     return width * height
 
 
-def get_aruko_marker(image):
+def get_aruco_marker(image):
     """Detect ArUco markers in an image."""
     if len(image.shape) == 2: 
         image = cv2.cvtColor(image, cv2.COLOR_GRAY2BGR)
