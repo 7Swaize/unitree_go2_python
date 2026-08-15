@@ -12,6 +12,5 @@ Internal Implementation Documentation
 
    core
    dds
-   validation
    video_module
    input_module

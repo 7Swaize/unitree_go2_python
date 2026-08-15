@@ -17,6 +17,16 @@ camera or streaming classes directly.
    :undoc-members:
    :show-inheritance:
 
+.. autoclass:: go2.modules.video.sources.camera_source.CameraSource
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+.. autoclass:: go2.modules.video.sources.camera_group.CameraGroup
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
 .. autoclass:: go2.modules.video.frame_result.FrameStatus
    :members:
    :undoc-members:
