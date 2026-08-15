@@ -21,11 +21,11 @@ def run_movement_sequence(controller: VirtualGo2Controller) -> None:
     # Here we wait for the stand up to complete, so we don't send movement commands during the stand-up sequence.
     controller.movement.stand_up().wait()
 
-    while True:
+    for _ in range(4):
         # Move forward for about 3 seconds at 0.5 m/s.
         # Since 'move' commands are retained for 1 second internally, we need to continously refresh the timeout.
         controller.movement.move(0.5, 0, 0)
-        time.sleep(0.01)
+        time.sleep(0.75)
 
     # Stop all active motion
     controller.movement.stop_move().wait()
