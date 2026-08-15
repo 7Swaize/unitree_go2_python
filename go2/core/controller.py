@@ -304,7 +304,7 @@ class NativeGo2Controller(Go2Controller):
         self._initialize_input_bindings()
 
 
-    def _init_cyclonedds_services() -> None:
+    def _init_cyclonedds_services(self) -> None:
         if len(sys.argv) < 2:
             ChannelFactoryInitialize(1, "lo")
         else:
