@@ -175,7 +175,7 @@ class MarkerScanProgram:
     def main(self) -> None:
         self._controller.movement.stand_up().wait()
  
-        for marker_id in range(self.NUM_MARKERS_TO_SCAN):
+        for marker_id in range(MarkerScanProgram.NUM_MARKERS_TO_SCAN):
             print(f"\n--- Scanning for Target Marker: {marker_id} ---")
             self._scan_for_marker(marker_id)
  
