@@ -11,7 +11,7 @@ class FrameStatus(Enum):
     PENDING = auto() #: Source initialised but no frame was currently available in a frame buffer
 
 
-@dataclass
+@dataclass(slots=True)
 class FrameResult:
     """Holds one captured moment from a single camera source."""
 
@@ -78,7 +78,7 @@ class FrameResult:
     
 
 
-@dataclass
+@dataclass(slots=True)
 class MultiFrameResult:
     """Holds frame results from a group of named cameras."""
 
