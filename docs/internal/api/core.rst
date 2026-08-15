@@ -1,5 +1,5 @@
 Go2 Controller
-==============
+--------------
 
 This module provides the **primary public API** for controlling the Unitree Go2 robot.
 
@@ -13,7 +13,7 @@ high-level functionality such as movement, video, audio, OCR, input, and LIDAR t
 
 
 Hardware Support Types
-======================
+----------------------
 
 .. autoclass:: go2.core.registry.HardwareType
    :members:
@@ -22,7 +22,7 @@ Hardware Support Types
 
 
 Module Management
-=================
+-----------------
 
 .. autoclass:: go2.core.registry.ExecutionMode
    :members:

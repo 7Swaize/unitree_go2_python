@@ -1,5 +1,5 @@
 Movement Module
-===============
+---------------
 
 This module provides high-level movement controls for the dog robot.
 

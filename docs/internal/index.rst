@@ -7,4 +7,3 @@ Go2-Control Documentation
    :caption: Contents:
 
    api/index
-   dev/index

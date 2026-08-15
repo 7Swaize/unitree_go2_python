@@ -1,3 +1,5 @@
+/* AI Generated */
+
 /* Improve overall readability */
 html {
     scroll-behavior: smooth;
@@ -41,15 +43,32 @@ table {
 
 
 /* For Conestack */
-/* Wider overall page */
-.container-xxl,
-#cs-layout {
-    max-width: 1800px !important;
+/* Widen overall layout and shrink the right (function list) sidebar */
+:root {
+  --layout-width: 1800px;
+  --sidebar-left-width: 180px;
+  --sidebar-right-width: 200px;
 }
 
-/* Let content expand */
-.cs-main,
-.cs-content {
-    max-width: none !important;
-    width: 100% !important;
+/* Lock the right sidebar to a fixed width and let it scroll instead of overflowing */
+.cs-local-toc {
+  width: var(--sidebar-right-width) !important;
+  max-width: var(--sidebar-right-width) !important;
+  overflow-x: auto;
+  overflow-y: auto; /* already set by the theme, restated for clarity */
+}
+
+/* Keep long names on one line so they scroll horizontally instead of wrapping/overflowing */
+.cs-local-toc nav a {
+  white-space: nowrap;
+}
+
+/* Optional: slim scrollbar so it doesn't eat into the narrow panel */
+.cs-local-toc::-webkit-scrollbar {
+  height: 6px;
+  width: 6px;
+}
+.cs-local-toc::-webkit-scrollbar-thumb {
+  background: rgba(0, 0, 0, 0.25);
+  border-radius: 3px;
 }

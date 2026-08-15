@@ -1,5 +1,5 @@
 LiDAR Control Module
-====================
+--------------------
 
 Access LiDAR sensor data from the Unitree Go2 robot or the Mujoco Simulator.
 Users are *recommended* to interact with :class:`~modules.lidar.lidar_module.LIDARModule` when

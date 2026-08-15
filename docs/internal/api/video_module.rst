@@ -1,5 +1,5 @@
 Video Module
-============
+------------
 
 This module provides a high-level interface for accessing camera frames
 and streaming video from the robot or an attached webcam. Users should
