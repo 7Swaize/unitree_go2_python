@@ -1,7 +1,7 @@
 from dataclasses import dataclass
 
 
-@dataclass
+@dataclass(slots=True)
 class ControllerState:
     """
     Represents the current state of a controller's inputs.

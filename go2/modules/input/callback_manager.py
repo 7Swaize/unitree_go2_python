@@ -2,9 +2,9 @@ from dataclasses import dataclass
 import struct
 from typing import Callable, Dict, List, Optional
 
+from ...logging import get_logger
 from .controller_state import ControllerState
 from .input_signal import InputSignal
-from ...logging import get_logger
 
 logger = get_logger(__name__)
 

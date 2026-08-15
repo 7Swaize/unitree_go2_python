@@ -1,12 +1,12 @@
 from typing import Callable, Optional
 from typing_extensions import override
 
+from ...core.module import DogModule
+from ...communication.dds import DDSTopics
 from .callback_manager import InputSignalCallbackManager, UnitreeRemoteControllerInputParser
 from .controller_state import ControllerState
 from .input_signal import InputSignal
 
-from ...core.module import DogModule
-from ...communication.dds import DDSTopics
 
 class InputModule(DogModule):
     """

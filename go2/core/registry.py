@@ -2,13 +2,13 @@ from dataclasses import dataclass
 from enum import Enum, auto
 from typing import Any, Dict, Generic, Optional, Type, TypeVar, Callable
 
-from .module import DogModule
 from ..modules.audio import AudioModule
 from ..modules.input import InputModule
 from ..modules.lidar import LIDARModule, NativeLIDARModule, VirtualLIDARModule
 from ..modules.movement import MovementModule, NativeMovementModule, VirtualMovementModule
 from ..modules.ocr import OCRModule
 from ..modules.video import VideoModule
+from .module import DogModule
 
 
 T = TypeVar('T', bound=DogModule)
