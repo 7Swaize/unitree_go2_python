@@ -10,7 +10,7 @@ def add_textured_geometry(generator: TerrainGenerator) -> None:
     texture_path = generator.resources.import_texture(absolute_path)
 
     # Add textured box to the scene using the returned path.
-    # This is a thin box to mimic aruko markers.
+    # This is a thin box to mimic aruco markers.
     generator.add_textured_geometry(texture_path, position=[1, 1, 0.5], euler=[0, 90, 0], size=[0.5, 0.5, 0.02], geo_type=GeometryType.BOX)
 
     # Add a full, 3D textured box to the scene using the returned path.

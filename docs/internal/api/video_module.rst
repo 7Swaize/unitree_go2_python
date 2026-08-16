@@ -1,5 +1,5 @@
 Video Module
-============
+------------
 
 This module provides a high-level interface for accessing camera frames
 and streaming video from the robot or an attached webcam. Users should
@@ -13,6 +13,16 @@ camera or streaming classes directly.
    :show-inheritance:
 
 .. autoclass:: go2.modules.video.sources.camera_source_factory.CameraSourceFactory
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+.. autoclass:: go2.modules.video.sources.camera_source.CameraSource
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+.. autoclass:: go2.modules.video.sources.camera_group.CameraGroup
    :members:
    :undoc-members:
    :show-inheritance:

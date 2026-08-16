@@ -1,0 +1,22 @@
+# https://stackoverflow.com/questions/72912762/setup-py-building-c-extension-with-numpy-dependency
+# NEED compilation against numpy>=2.0 for usage with any numpy 2.x
+
+[build-system]
+requires = [
+    "setuptools>=61.0.0",
+    "wheel",
+    "numpy>=2.0"
+]
+build-backend = "setuptools.build_meta"
+
+
+[project]
+name = "fast_pointcloud"
+version = "1.1.0"
+description = "Fast PointCloud2 XYZ(+intensity) decoder"
+authors = [
+    { name="7Swaize" }
+]
+dependencies = [
+    "numpy>=2.0"
+]

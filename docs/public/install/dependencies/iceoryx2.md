@@ -66,3 +66,30 @@ cmake --install target/ff/cxx/build --prefix target/ff/cc/install
 ```bash
 pip install iceoryx2==0.9.0
 ```
+
+
+## Global Configuration Setup
+
+Install CLI tools.
+
+```bash
+cargo install iceoryx2-cli
+```
+
+Create a global configuration.
+
+```bash
+iox2 config generate local
+```
+
+Run the following to edit the configuration file.
+
+```bash
+awk '
+/^\[defaults\.request-response\]/ { in_section=1 }
+/^\[/ && !/^\[defaults\.request-response\]/ { in_section=0 }
+in_section && /^max-active-requests-per-client = 4$/ { sub(/4$/, "8") }
+{ print }
+' /home/user/.config/iceoryx2/iceoryx2.toml > /tmp/iceoryx2.toml.tmp && mv /tmp/iceoryx2.toml.tmp /home/user/.config/iceoryx2/iceoryx2.toml
+```
+

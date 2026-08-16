@@ -2,11 +2,6 @@
 
 This installation consists of two steps: first, installing the shared Iceoryx2 configuration files, and second, installing the actual simulator.
 
-**IMPORTANT: If you are on a virtual machine, install the following packages to allow for VM -> GPU interop.**
-
-```bash
-sudo apt install libglfw3-dev mesa-utils
-```
 
 ## Clone the Repository
 
@@ -90,7 +85,7 @@ cd $GO2_WS/unitree_mujoco/simulate
 pip install . -v --config-settings=logging.level=INFO
 ```
 
-# Test Simulator will run 
+# Test Simulator Will Run 
 Run the following command in the terminal to test the installation. It should launch the simulator.
 ```bash
 go2sim

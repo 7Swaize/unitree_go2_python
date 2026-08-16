@@ -5,6 +5,8 @@ from ..frame_result import MultiFrameResult
 
 
 class CameraGroup:
+    __slots__ = ("_sources")
+    
     def __init__(self, sources: Dict[str, CameraSource]) -> None:
         if not sources:
             raise ValueError("[Video] CameraGroup requires atleast one camera source")

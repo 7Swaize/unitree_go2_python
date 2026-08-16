@@ -1,10 +1,10 @@
-from dataclasses import dataclass
+from dataclasses import dataclass, fields, replace
 import struct
 from typing import Callable, Dict, List, Optional
 
+from ...logging import get_logger
 from .controller_state import ControllerState
 from .input_signal import InputSignal
-from ...logging import get_logger
 
 logger = get_logger(__name__)
 
@@ -16,6 +16,7 @@ _ANALOG_SIGNALS = {
 }
 
 
+@dataclass(slots=True)
 class Callback:
     """
     Represents a registered callback for a controller input signal.
@@ -116,7 +117,7 @@ class InputSignalCallbackManager:
                 if self._should_trigger(signal, cb, state):
                     self._execute(cb, state)
 
-        self._previous_state = ControllerState(**state.__dict__)
+        self._previous_state = replace(state)
 
 
     def _shutdown(self) -> None:
@@ -253,15 +254,15 @@ class UnitreeRemoteControllerInputParser:
         ControllerState
             Updated state with `changed` flag indicating modifications
         """
-        self._previous_state = ControllerState(**self._state.__dict__)
+        self._previous_state = replace(self._state)
         
         self._parse_analog(remote_data)
         self._parse_buttons(remote_data[2], remote_data[3])
 
         # just compares if there is a change
         self._state.changed = any(
-            getattr(self._state, attr) != getattr(self._previous_state, attr)
-            for attr in vars(self._state) if attr != "changed"
+            getattr(self._state, f.name) != getattr(self._previous_state, f.name)
+            for f in fields(self._state) if f.name != "changed"
         )
     
         return self._state

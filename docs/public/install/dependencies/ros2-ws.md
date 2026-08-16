@@ -131,12 +131,12 @@ rosdep update
 ```
 
 
-# C-Extensions - Installation
+# Compute - Installation
 
 Install this dependency for our ROS2 nodes. 
 
 ```bash
-cd $GO2_WS/go2-control/c_extensions
+cd $GO2_WS/go2-control/compute
 pip install .
 ```
 

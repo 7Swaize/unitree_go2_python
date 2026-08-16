@@ -1,5 +1,5 @@
 Controller Input Module
-=======================
+-----------------------
 
 Handles remote controller input for the robot.
 

@@ -1,7 +1,7 @@
 import cv2
 from collections import deque
 
-from go2.core import Go2Controller, ModuleType, HardwareType
+from go2.core import ModuleType, HardwareType, VirtualGo2Controller, create_controller
 from go2.modules.video import CameraSourceFactory
 from go2.modules.ocr import OCRConfig
 
@@ -12,13 +12,14 @@ FRAMES_PER_ANALYSIS = 4
 QUEUE_MAXLEN = 8
 
 
-def create_controller() -> Go2Controller:
+def init_controller() -> VirtualGo2Controller:
     # Create a Go2 Controller instance to access all provided funtionalities.
-    controller = Go2Controller(hardware_type=HardwareType.VIRTUAL)
+    # It's recommended to use the 'create_controller' factory method to create the controller (as shown below).
+    controller = create_controller(hardware_type=HardwareType.VIRTUAL)
 
     # The VIDEO module is not a default module on the controller. Therefore, we must add it explicitly.
     # The module contructor takes in a 'camera_source' target where we say when camera we want to read frames from.
-    # Here, we create an native camera to read frames from a connected camera via OpenCV.
+    # Here, we create an external camera to read frames from a connected camera via OpenCV.
     controller.add_module(ModuleType.VIDEO, camera_source=CameraSourceFactory.create_opencv_camera(0))
 
     # The OCR module is not a default module on the controller. Therefore, we must add it explicitly.
@@ -28,7 +29,7 @@ def create_controller() -> Go2Controller:
     return controller
 
 
-def main(controller: Go2Controller, ) -> None:
+def main(controller: VirtualGo2Controller) -> None:
     queue = deque(maxlen=QUEUE_MAXLEN)
 
     while True:
@@ -66,7 +67,7 @@ def main(controller: Go2Controller, ) -> None:
 
 if __name__ == "__main__":
     # Create a controller instance.
-    controller = create_controller()
+    controller = init_controller()
 
     main(controller)
 

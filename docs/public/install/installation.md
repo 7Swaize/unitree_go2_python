@@ -39,7 +39,7 @@ You can install the required packages on Ubuntu 22.04 via the following instruct
 
 ```bash
 sudo apt-get update
-sudo apt-get install -y cmake g++ build-essential libyaml-cpp-dev libeigen3-dev libboost-all-dev libspdlog-dev libfmt-dev clang libclang-dev
+sudo apt-get install -y cmake g++ build-essential libyaml-cpp-dev libeigen3-dev libboost-all-dev libspdlog-dev libfmt-dev clang libclang-dev libglfw3-dev mesa-utils
 hash -r
 ```
 

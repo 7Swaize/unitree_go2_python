@@ -1,14 +1,28 @@
 Movement Module
-===============
+---------------
 
 This module provides high-level movement controls for the dog robot.
 
-Users should interact only with the ``MovementModule`` class to
-command the robot. It wraps the underlying hardware interface and
-performs safety checks to prevent unsafe motions.
+
+.. autoclass:: go2.modules.movement.movement_module.MovementModule
+   :members:
+   :undoc-members:
+   :show-inheritance:
 
 
-.. automodule:: go2.modules.movement.movement_module
+.. autoclass:: go2.modules.movement.native_movement_module.NativeMovementModule
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+
+.. autoclass:: go2.modules.movement.virtual_movement_module.VirtualMovementModule
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+
+.. autoclass:: go2.modules.movement.virtual_movement_module.VirtualCommandHandle
    :members:
    :undoc-members:
    :show-inheritance:

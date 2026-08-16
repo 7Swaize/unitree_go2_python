@@ -1,5 +1,5 @@
 Terrain Generation
-==================
+------------------
 
 .. py:module:: go2sim
    :synopsis: Terrain generation module for MuJoCo environments.

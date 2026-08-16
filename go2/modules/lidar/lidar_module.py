@@ -1,24 +1,20 @@
 import numpy as np
+from abc import ABC
 from typing import Callable
-from typing_extensions import override
 
 from ...core.module import DogModule
-from ...hardware.hardware_type import HardwareType
-from ...hardware.hardware_interface_lidar import HardwareInterfaceLIDAR
-from ...hardware.native.native_hardware_lidar import NativeHardwareLIDAR
-from ...hardware.virtual.virtual_hardware_lidar import VirtualHardwareLIDAR
-from .callback_dispatcher import CallbackDispatcher
-from .iox_receiver import IoxReceiver
+from .utils.callback_dispatcher import CallbackDispatcher
+from .utils.iox_receiver import IoxReceiver
 
 
-class LIDARModule(DogModule):
+class LIDARModule(DogModule, ABC):
     """
     ``LIDARModule`` provides a simple API for:
         - Receiving decoded ``PointCloud2`` structures as xyz-(optionally intensity) numpy arrays
     
     Users should not access or construct this class directly.
     Rather, they should access it through the :class:`~core.controller.Go2Controller` instance.
-
+ 
     Parameters
     ----------
     publish_hz : int
@@ -29,47 +25,19 @@ class LIDARModule(DogModule):
         (Although, the data transfer will always be an *O(1)* pointer-swap internally).
         Must be in the range [5, 100]. Default is 10.
         
-        - When running in ``HardwareType.Native`` mode, ``publish_hz`` does **not** control 
+        - When running in ``HardwareType.NATIVE`` mode, ``publish_hz`` does **not** control 
           the actual publish rate of the physical LIDAR sensor. You must configure that rate 
           manually via the LIDAR's own driver/firmware settings. In this mode, ``publish_hz`` 
           only governs how frequently this wrapper internally polls for new data over IPC 
           from the ROS2 publisher node to this receiver. 
-        - When running in ``HardwareType.Virtual`` mode, ``publish_hz`` **does** matter, since 
+        - When running in ``HardwareType.VIRTUAL`` mode, ``publish_hz`` **does** matter, since 
           we are mocking the real LIDAR and fully control when it publishes data.
-
-    Important
-    ---------
-    When executing on ``HardwareType.Native`` this module launches ROS2 nodes.
-    In such a case, it is **critical** that students **ALWAYS** call :meth:`Go2Controller.safe_shutdown` after normal (error free) script exit.
     """
 
     def __init__(self, publish_hz: int = 10) -> None:
         super().__init__("LIDAR")
         self._publish_hz: int = publish_hz
-        self._hardware: HardwareInterfaceLIDAR = None
-        self._dispatcher: CallbackDispatcher = None
-        self._iox_receiver: IoxReceiver = None
 
-    @override
-    def _initialize(self) -> None:
-        if self._initialized:
-            return
-
-        if self._publish_hz < 5 or self._publish_hz > 100:
-            raise ValueError(f"publish_hz must be in the range [5, 100]; got {self._publish_hz}")
-
-        if self._hardware_type == HardwareType.NATIVE:
-            self._hardware = NativeHardwareLIDAR()
-        else:
-            self._hardware = VirtualHardwareLIDAR()
-
-        self._hardware._initialize()
-        self._launch_bridge()
-        self._initialized = True
-
-    # Rationale:
-    # I dont want these handling deps to leak into the hardware abstraction.
-    # Since they are shared across both abstractions, we can just keep it here.
     def _launch_bridge(self) -> None:
         self._dispatcher = CallbackDispatcher()
         self._iox_receiver = IoxReceiver(self._dispatcher, self._publish_hz)
@@ -103,16 +71,3 @@ class LIDARModule(DogModule):
             If you *need* a C-contiguous array (row-major) you can use use ``numpy.ascontiguousarray(array)``.
         """
         self._dispatcher._register_decoded(callback)
-
-
-    @override
-    def _shutdown(self) -> None:
-        if self._hardware:
-            self._hardware._shutdown()
-
-        if self._iox_receiver:
-            self._iox_receiver._shutdown()
-            self._iox_receiver.join(timeout=2)
-
-        self._initialized = False
-
