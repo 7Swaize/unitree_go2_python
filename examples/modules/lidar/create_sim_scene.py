@@ -7,7 +7,7 @@ ROOM_SIZE: np.ndarray = [20.0, 20.0]
 WALL_HEIGHT = 15.0
 WALL_THICKNESS = 0.1
 PILLAR_SIZE = 0.15
-DOOR_WIDTH = 1
+DOOR_WIDTH = 1.0
 ROOF_THICKNESS = 0.1
 
 
@@ -72,7 +72,7 @@ def add_room(generator: TerrainGenerator) -> None:
     generator.add_geometry(
         position=[0.0, 0.0, WALL_HEIGHT + ROOF_THICKNESS / 2.0],
         euler=[0.0, 0.0, 0.0],
-        size=[length_x, length_y],
+        size=[length_x, length_y, ROOF_THICKNESS],
         geo_type=GeometryType.BOX
     )
 
