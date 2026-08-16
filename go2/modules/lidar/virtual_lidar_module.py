@@ -7,7 +7,7 @@ class VirtualLIDARModule(LIDARModule):
     """
     Runs the LIDAR pipeline against the MuJoCo simulation.
 
-    The simulated LIDAR approximates the [Livox Mid-360](https://www.livoxtech.com/mid-360),including its scan pattern
+    The simulated LIDAR approximates the `Livox Mid-360 <https://www.livoxtech.com/mid-360>`_, including its scan pattern
     and 40 meter maximum range. The simulated sensor produces 200,000 points per second, distributed across
     publishes according to ``publish_hz``. Therefore, ``publish_hz`` controls the point cloud publication rate, while the
     overall point generation rate remains fixed at 200,000 points per second.
