@@ -16,14 +16,14 @@ For installation instructions, see [here](docs/public/install/installation.md).
 Below are sample files demonstrating how to progammatically interact with the virtual Go2 robot in the mujoco environment.  Start with these to write your own programs.
 
 ### Core Module Examples
-- [Movement Examples](examples/modules/movement/movement.md) — Examples for working with the controller's movement capabilities
-- [Video Examples](examples/modules/video/video.md) — Examples for working with the controller's video capabilities
-- [OCR Examples](examples/modules/ocr/ocr.md) — Examples for working with the controller's OCR capabilties
+- [Movement Examples](examples/modules/movement/movement.md) — Examples for working with the controller's movement capabilities.
+- [Video Examples](examples/modules/video/video.md) — Examples for working with the controller's video capabilities.
+- [OCR Examples](examples/modules/ocr/ocr.md) — Examples for working with the controller's OCR capabilties.
 - [LIDAR Examples](examples/modules/lidar/lidar.md) — Examples for working with the controller's LIDAR capabilities.
 
 ### Advanced Examples
-- [Aruco Marker Examples](examples/aruco_markers/aruco_markers.md) — Examples for detecting and reacting to Aruco markers
-- [Terrain Generator Examples](examples/terrain_generator/terrain_generator.md) — Examples for working with the simulator's terrain generation capabilties
+- [Aruco Marker Examples](examples/aruco_markers/aruco_markers.md) — Examples for detecting and reacting to Aruco markers.
+- [Terrain Generator Examples](examples/terrain_generator/terrain_generator.md) — Examples for working with the simulator's terrain generation capabilties.
 
 ### Getting Started
 
