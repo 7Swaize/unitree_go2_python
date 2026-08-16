@@ -19,6 +19,7 @@ Below are sample files demonstrating how to progammatically interact with the vi
 - [Movement Examples](examples/modules/movement/movement.md) — Examples for working with the controller's movement capabilities
 - [Video Examples](examples/modules/video/video.md) — Examples for working with the controller's video capabilities
 - [OCR Examples](examples/modules/ocr/ocr.md) — Examples for working with the controller's OCR capabilties
+- [LIDAR Examples](examples/modules/lidar/lidar.md) — Examples for working with the controller's LIDAR capabilities.
 
 ### Advanced Examples
 - [Aruco Marker Examples](examples/aruco_markers/aruco_markers.md) — Examples for detecting and reacting to Aruco markers
