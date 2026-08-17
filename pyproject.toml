@@ -37,6 +37,10 @@ test = ["pytest"]
 where = ["."]
 include = ["go2*"]
 
+# https://stackoverflow.com/questions/76073605/add-py-typed-as-package-data-with-setuptools-in-pyproject-toml
+[tool.setuptools.package-data]
+"pkgname" = ["py.typed"]
+
 
 [tool.mypy]
 ignore_missing_imports = true
