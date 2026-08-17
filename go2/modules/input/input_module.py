@@ -110,7 +110,7 @@ class InputModule(DogModule):
         ControllerState
             Current controller state after parsing
         """
-        controller_state = self._input_parser._parse(msg)
+        controller_state = self._input_parser._parse(msg.wireless_remote)
         self._callback_manager._handle(controller_state)
 
         return controller_state
