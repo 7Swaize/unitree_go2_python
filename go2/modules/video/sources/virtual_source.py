@@ -1,8 +1,9 @@
 import cv2
 import threading
-import numpy as np
 import iceoryx2 as iox2
-from typing import Optional
+import numpy as np
+import numpy.typing as npt
+from typing import Optional, cast
 from typing_extensions import override
 
 from iceoryx_interfaces.camera_data import FrameData_
@@ -14,9 +15,9 @@ from ..frame_result import FrameResult
 
 class VirtualCameraSource(CameraSource):
     def __init__(self) -> None:
-        self._thread: Optional[threading.Thread] = None
         self._stop_event = threading.Event()
-        self._latest_frames: Optional[tuple[np.ndarray, np.ndarray]] = None
+        self._thread: Optional[threading.Thread] = None
+        self._latest_frames: Optional[tuple[npt.NDArray[np.uint8], npt.NDArray[np.uint16]]] = None
         self._initialize_iox_services()
 
     @override
@@ -55,12 +56,16 @@ class VirtualCameraSource(CameraSource):
             # I am more aggressive with the copy here to immediately allow a DEC_REF and the data to be freed in shared memory.
             # However, its still one copy each.
             raw_rgb = np.asarray(msg.rgb_data, dtype=np.uint8).reshape((h, w, 3))
-            rgb = cv2.cvtColor(raw_rgb[::-1], cv2.COLOR_RGB2BGR) # copy
+            rgb = cast(
+                npt.NDArray[np.uint8],
+                cv2.cvtColor(raw_rgb[::-1], cv2.COLOR_RGB2BGR)
+            )
 
             raw_depth = np.asarray(msg.depth_data, dtype=np.uint16).reshape((h, w))
             depth = np.ascontiguousarray(raw_depth[::-1]) # copy 
 
             self._latest_frames = (rgb, depth)  # atomic under GIL
+
 
     @override
     def _get_frames(self) -> FrameResult:
@@ -75,6 +80,5 @@ class VirtualCameraSource(CameraSource):
         self._stop_event.set()
         if self._thread:
             self._thread.join()
-            self._thread = None
 
         self._latest_frames = None

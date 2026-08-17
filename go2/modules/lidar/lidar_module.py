@@ -1,10 +1,11 @@
 import numpy as np
+import numpy.typing as npt
 from abc import ABC
 from typing import Callable
 
 from ...core.module import DogModule
-from .utils.callback_dispatcher import CallbackDispatcher
 from .utils.iox_receiver import IoxReceiver
+from .utils.callback_dispatcher import CallbackDispatcher
 
 
 class LIDARModule(DogModule, ABC):
@@ -43,7 +44,7 @@ class LIDARModule(DogModule, ABC):
         self._iox_receiver = IoxReceiver(self._dispatcher, self._publish_hz)
         self._iox_receiver.start()
 
-    def register_decoded_pointcloud_callback(self, callback: Callable[[int, np.ndarray], None]) -> None:
+    def register_decoded_pointcloud_callback(self, callback: Callable[[int, npt.NDArray[np.float32]], None]) -> None:
         """
         Register a callback to receive decoded PointCloud2 data.
         The callback is triggered whenever a new raw point cloud sample is received via Iceoryx2.

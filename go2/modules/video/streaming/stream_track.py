@@ -1,10 +1,10 @@
 import asyncio
-import threading
 from fractions import Fraction
 from typing import Optional
  
 import cv2
 import numpy as np
+import numpy.typing as npt
 from aiortc import VideoStreamTrack
 from av import VideoFrame
 
@@ -28,22 +28,19 @@ class OpenCVStreamTrack(VideoStreamTrack):
         self._version = 0
         self._latest_version = -1
         self._start_time: Optional[float] = None
-        self._loop = asyncio.get_event_loop()
+        self._loop: asyncio.AbstractEventLoop = asyncio.get_event_loop()
 
         self._cached_frame: Optional[VideoFrame] = None
 
 
-    def push_frame(self, bgr_frame: np.ndarray) -> None:
-        if bgr_frame is None:
-            return
-
+    def push_frame(self, bgr_frame: npt.NDArray[np.uint8]) -> None:
         h, w = bgr_frame.shape[:2]
         if w != self._cfg.width or h != self._cfg.height:
             bgr_frame = cv2.resize(
                 bgr_frame,
                 (self._cfg.width, self._cfg.height),
                 interpolation=cv2.INTER_LINEAR,
-            )
+            ) # type: ignore[assignment]
 
         yuv = cv2.cvtColor(bgr_frame, cv2.COLOR_BGR2YUV_I420)
         np.copyto(self._frame_buf, yuv)

@@ -1,7 +1,9 @@
 import cv2
-import numpy as np
 import pytesseract
+import numpy as np
+import numpy.typing as npt
 from collections import Counter
+from typing import Sequence, cast
 from typing_extensions import override
 
 from .ocr_config import OCRConfig
@@ -26,7 +28,7 @@ class OCRModule(DogModule):
         self._initialized = True
 
     # See ref: https://medium.com/@EnginDenizTangut/from-image-to-voice-building-an-ocr-tts-app-with-python-opencv-tesseract-5f5db8ea3b7b
-    def extract_text_from_image(self, image: np.ndarray, config: OCRConfig = OCRConfig()) -> tuple[list[str], np.ndarray]:
+    def extract_text_from_image(self, image: npt.NDArray[np.uint8], config: OCRConfig = OCRConfig()) -> tuple[list[str], npt.NDArray[np.uint8]]:
         """
         Run OCR on a single image and return the detected text along with an annotated copy.
 
@@ -46,7 +48,7 @@ class OCRModule(DogModule):
         return words, annotated
     
 
-    def extract_text_from_images_temporal_voting(self, images: np.ndarray[np.ndarray], config: OCRConfig = OCRConfig()) -> tuple[list[str], np.ndarray[np.ndarray]]:
+    def extract_text_from_images_temporal_voting(self, images: Sequence[npt.NDArray[np.uint8]], config: OCRConfig = OCRConfig())-> tuple[list[str], list[npt.NDArray[np.uint8]]]:
         """
         Run OCR across multiple images of the same scene and keep only words detected
         in at least ``config.temporal_voting_threshold`` of them, reducing false positives
@@ -85,10 +87,10 @@ class OCRModule(DogModule):
 
         word_counts = Counter(detected_words)
         final_words = [word for word, count in word_counts.items() if count >= config.temporal_voting_threshold]
-        return final_words, annotated_images
+        return final_words, cast(list[npt.NDArray[np.uint8]], annotated_images)
     
 
-    def _preprocess(self, image: np.ndarray) -> np.ndarray:
+    def _preprocess(self, image: npt.NDArray[np.uint8]) -> npt.NDArray[np.uint8]:
         gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
         gray = cv2.resize(gray, None, fx=1.5, fy=1.5, interpolation=cv2.INTER_CUBIC)
         gray = cv2.bilateralFilter(gray, 9, 75, 75)
@@ -102,10 +104,10 @@ class OCRModule(DogModule):
         kernel = np.ones((2, 2), np.uint8)
         clean = cv2.morphologyEx(thresh, cv2.MORPH_OPEN, kernel)
         clean = cv2.morphologyEx(clean, cv2.MORPH_CLOSE, kernel)
-        return clean
+        return cast(npt.NDArray[np.uint8], clean)
 
 
-    def _filter_and_highlight(self, image: np.ndarray, config: OCRConfig) -> tuple[list[str], np.ndarray]:
+    def _filter_and_highlight(self, image: npt.NDArray[np.uint8], config: OCRConfig) -> tuple[list[str], npt.NDArray[np.uint8]]:
         ocr_data = pytesseract.image_to_data(image, output_type=pytesseract.Output.DICT, config=config.cli_command)
         output = cv2.cvtColor(image, cv2.COLOR_GRAY2BGR)
 
@@ -119,7 +121,7 @@ class OCRModule(DogModule):
                 x, y, w, h = (ocr_data["left"][i], ocr_data['top'][i], ocr_data['width'][i], ocr_data['height'][i])
                 cv2.rectangle(output, (x, y), (x + w, y + h), (0, 255, 0), 2)
 
-        return confident_words, output
+        return confident_words, cast(npt.NDArray[np.uint8], output)
 
 
     @override

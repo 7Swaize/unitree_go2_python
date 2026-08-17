@@ -1,9 +1,12 @@
 from abc import ABC, abstractmethod
+from typing import Generic, TypeVar
 
 from ...core.module import DogModule
 
+AbstractCommandResult = TypeVar('AbstractCommandResult')
 
-class MovementModule(DogModule, ABC):
+
+class MovementModule(DogModule, ABC, Generic[AbstractCommandResult]):
     """
     Abstract base class defining the movement/sport control interface for the Go2, implemented by both
     native (hardware) and virtual (simulated) backends.
@@ -32,27 +35,27 @@ class MovementModule(DogModule, ABC):
         pass
 
     @abstractmethod
-    def move(self, vx: float = 0.0, vy: float = 0.0, vyaw: float = 0.0):
+    def move(self, vx: float = 0.0, vy: float = 0.0, vyaw: float = 0.0) -> AbstractCommandResult:
         pass
 
     @abstractmethod
-    def stand_up(self):
-        pass
-
-
-    @abstractmethod
-    def stand_down(self):
+    def stand_up(self) -> AbstractCommandResult:
         pass
 
     @abstractmethod
-    def stop_move(self):
+    def stand_down(self) -> AbstractCommandResult:
         pass
 
     @abstractmethod
-    def damp(self):
+    def stop_move(self) -> AbstractCommandResult:
         pass
 
-    def balance_stand(self):
+    @abstractmethod
+    def damp(self) -> AbstractCommandResult:
+        pass
+
+    @abstractmethod
+    def balance_stand(self) -> AbstractCommandResult:
         pass
 
     @abstractmethod

@@ -16,7 +16,7 @@ class AudioModule(DogModule):
     - Users do not need to manage threads or the underlying pyttsx3 engine. Though it can be done via a call :meth:`AudioModule.get_engine`.
     """
 
-    def __init__(self):
+    def __init__(self) -> None:
         super().__init__("Audio")
 
     @override
@@ -31,7 +31,7 @@ class AudioModule(DogModule):
         self._initialized = True
 
 
-    def play_audio(self, text: str, blocking=False) -> None:
+    def play_audio(self, text: str, blocking: bool = False) -> None:
         """
         Play audio from text.
 

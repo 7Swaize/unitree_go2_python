@@ -1,6 +1,6 @@
-import time
 import threading
 import numpy as np
+import numpy.typing as npt
 import pyrealsense2 as rs
 from typing import Optional
 from typing_extensions import override
@@ -18,8 +18,8 @@ class RealSenseDepthCameraSource(CameraSource):
         self._height: int = 480
         self._fps: int = 30
 
-        self._latest_frames: Optional[tuple[np.ndarray, np.ndarray]] = None
-        self._thread = None
+        self._thread: Optional[threading.Thread] = None
+        self._latest_frames: Optional[tuple[npt.NDArray[np.uint8], npt.NDArray[np.uint16]]] = None
         self._stop_event = threading.Event()
 
         self._initialize_pipeline()
@@ -36,7 +36,7 @@ class RealSenseDepthCameraSource(CameraSource):
         self._thread = threading.Thread(target=self._rs_thread, daemon=True)
         self._thread.start()
 
-    def _rs_thread(self):
+    def _rs_thread(self) -> None:
         self._pipeline.start(self._config)
         align = rs.align(rs.stream.color)
 
@@ -73,6 +73,5 @@ class RealSenseDepthCameraSource(CameraSource):
         self._stop_event.set()
         if self._thread:
             self._thread.join()
-            self._thread = None
 
         self._latest_frames = None

@@ -18,9 +18,9 @@ class NativeLIDARModule(LIDARModule):
     """
 
     @override
-    def __init__(self, publish_hz = 10) -> None:
+    def __init__(self, publish_hz: int = 10) -> None:
         super().__init__(publish_hz)
-        self._ros_proc: Optional[subprocess.Popen] = None 
+        self._ros_proc: Optional[subprocess.Popen[bytes]] = None 
 
     @override
     def _initialize(self) -> None:
@@ -35,17 +35,15 @@ class NativeLIDARModule(LIDARModule):
         self._initialized = True
 
     def _launch_ros(self) -> None:
-        kwargs = dict()
         # To detach child process: https://stackoverflow.com/questions/45911705/why-use-os-setsid-in-python
-        kwargs["start_new_session"] = True
 
         self._ros_proc = subprocess.Popen(
             ["ros2", "launch", "bringup", "lidar_processor.launch.py"],
-            **kwargs
+            start_new_session=True
         )
 
     @override
-    def _shutdown(self):
+    def _shutdown(self) -> None:
         if self._ros_proc and self._ros_proc.poll() is None:
             try:
                 os.killpg(os.getpgid(self._ros_proc.pid), signal.SIGINT)

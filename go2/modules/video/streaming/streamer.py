@@ -1,31 +1,35 @@
+import numpy as np
+import numpy.typing as npt
 import asyncio
 import threading
 import socket
 
-from aiortc import RTCPeerConnection, RTCSessionDescription, RTCRtpSender
 from aiohttp import web
+from aiortc import RTCPeerConnection, RTCSessionDescription, RTCRtpSender
+from typing import Optional, Any
 
+from ....logging import get_logger
 from .stream_config import StreamConfig
 from .stream_track import OpenCVStreamTrack
 from .serve import HTML_CONTENT
-from ....logging import get_logger
 
 logger = get_logger(__name__)
 
 
 # TURN for public conn? https://www.100ms.live/blog/webrtc-python-react#interactive-connectivity-establishment---ice
 class WebRTCStreamer:
-    def __init__(self, stream_config: StreamConfig):
+    def __init__(self, stream_config: StreamConfig) -> None:
         self._stream_config = stream_config
         self._track = OpenCVStreamTrack(stream_config)
- 
         self._pcs: set[RTCPeerConnection] = set()
-        self._loop: asyncio.AbstractEventLoop = None
-        self._server_thread: threading.Thread = None
+
+        self._loop: Optional[asyncio.AbstractEventLoop] = None
+        self._server_thread: Optional[threading.Thread] = None
+        self._runner: Optional[web.AppRunner] = None
 
 
-    def _start_in_thread(self):
-        def _run():
+    def _start_in_thread(self) -> None:
+        def _run() -> None:
             self._loop = asyncio.new_event_loop()
             asyncio.set_event_loop(self._loop)
             self._loop.run_until_complete(self._run_server())
@@ -34,41 +38,38 @@ class WebRTCStreamer:
         self._server_thread.start()
 
 
-    def _send(self, frame):
-        if frame is None:
-            return
+    def _send(self, frame: npt.NDArray[Any]) -> None:
         self._track.push_frame(frame)
 
 
-    def _get_local_ip_address(self):
-        s = None
+    def _get_local_ip_address(self) -> str:
+        s: Optional[socket.socket] = None
+        ip: str
         try:
             s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-            s.connect(("8.8.8.8", 80)) 
+            s.connect(("8.8.8.8", 80))
             ip = s.getsockname()[0]
         except Exception:
             ip = "127.0.0.1"
         finally:
             if s:
                 s.close()
-        
         return ip
 
 
-    def _get_port(self):
+    def _get_port(self) -> int:
         return self._stream_config.port
 
 
     async def _serve_html(self, request: web.Request) -> web.Response:
         return web.Response(text=HTML_CONTENT, content_type="text/html")
 
-    async def _offer(self, request):  
+    async def _offer(self, request: web.Request) -> web.Response:
         params = await request.json()
         offer = RTCSessionDescription(sdp=params["sdp"], type=params["type"])
 
         pc = RTCPeerConnection()
         self._pcs.add(pc)
-        
         transceiver = pc.addTransceiver(self._track, direction="sendonly")
         try:
             caps = RTCRtpSender.getCapabilities("video")
@@ -76,11 +77,10 @@ class WebRTCStreamer:
             if vp8_codecs:
                 transceiver.setCodecPreferences(vp8_codecs)
         except Exception:
-            pass # Just best effort
-
+            pass  # Just best effort
 
         @pc.on("connectionstatechange")
-        async def _on_state():
+        async def _on_state() -> None:
             logger.debug(f"[WebRTC] {pc.connectionState}")
             if pc.connectionState in ("failed", "closed", "disconnected"):
                 await pc.close()
@@ -113,10 +113,10 @@ class WebRTCStreamer:
 
 
     def _shutdown(self) -> None:
-        async def _async_shutdown():
+        async def _async_shutdown() -> None:
             await asyncio.gather(*[pc.close() for pc in self._pcs], return_exceptions=True)
             self._pcs.clear()
-            if hasattr(self, "_runner"):
+            if self._runner is not None:
                 await self._runner.cleanup()
  
         if self._loop and self._loop.is_running():

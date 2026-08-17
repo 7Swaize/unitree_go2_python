@@ -4,8 +4,8 @@ from typing import Any, Dict, Generic, Optional, Type, TypeVar, Callable
 
 from ..modules.audio import AudioModule
 from ..modules.input import InputModule
-from ..modules.lidar import LIDARModule, NativeLIDARModule, VirtualLIDARModule
-from ..modules.movement import MovementModule, NativeMovementModule, VirtualMovementModule
+from ..modules.lidar import NativeLIDARModule, VirtualLIDARModule
+from ..modules.movement import NativeMovementModule, VirtualMovementModule
 from ..modules.ocr import OCRModule
 from ..modules.video import VideoModule
 from .module import DogModule
@@ -57,14 +57,18 @@ class ModuleDescriptor(Generic[T]):
     """
 
     module_type: ModuleType  #: Enum identifying the module
-    module_class: Type[T]  #: Concrete implementation class
+    module_class: Optional[Type[T]]  #: Optional concrete implementation class
     display_name: str  #: Human-readable name
     requires_native_hardware: bool = False  #: Whether this module needs native hardware
     requires_advanced_execution: bool = False  #: Whether this module needs advanced execution mode
     class_resolver: Optional[Callable[[HardwareType], Type[T]]] = None #: Resolver used during resolution
 
+    def __post_init__(self) -> None:
+        if self.module_class is None and self.class_resolver is None:
+            raise ValueError(f"{self.module_type}: must provide 'module_class' or 'class_resolver'")
+
     def _resolve_class(self, hardware_type: HardwareType) -> Type[T]:
-        return self.class_resolver(hardware_type) if self.class_resolver else self.module_class
+        return self.class_resolver(hardware_type) if self.class_resolver else self.module_class # type: ignore[return-value]
  
     def create_instance(self, hardware_type: HardwareType, *args: Any, **kwargs: Any) -> T:
         return self._resolve_class(hardware_type)(*args, **kwargs)
@@ -125,7 +129,7 @@ class ModuleRegistry:
  
         cls._register(ModuleDescriptor(
             ModuleType.MOVEMENT,
-            MovementModule,
+            None,
             "Movement Control",
             requires_native_hardware=False,
             requires_advanced_execution=False,
@@ -160,7 +164,7 @@ class ModuleRegistry:
  
         cls._register(ModuleDescriptor(
             ModuleType.LIDAR,
-            LIDARModule,
+            None,
             "LIDAR Capture",
             requires_native_hardware=False,
             requires_advanced_execution=True,
@@ -170,4 +174,4 @@ class ModuleRegistry:
         ))
 
 
-ModuleRegistry._register_defaults()  # pylint: disable=protected-access
+ModuleRegistry._register_defaults()

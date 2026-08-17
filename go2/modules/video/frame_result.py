@@ -1,8 +1,10 @@
 import numpy as np
+import numpy.typing as npt
+
 from enum import Enum, auto
-from collections.abc import Iterator
 from typing import Dict, Optional
 from dataclasses import dataclass
+from collections.abc import Iterator
 
 
 class FrameStatus(Enum):
@@ -16,11 +18,11 @@ class FrameResult:
     """Holds one captured moment from a single camera source."""
 
     status: FrameStatus = FrameStatus.PENDING
-    color: Optional[np.ndarray] = None  #: BGR color image (H, W, 3). Always present for color/RGB cameras.
-    depth: Optional[np.ndarray] = None  #: Depth image (H, W) in uint16. Only present for depth cameras.
+    color: Optional[npt.NDArray[np.uint8]] = None  #: BGR color image (H, W, 3). Always present for color/RGB cameras.
+    depth: Optional[npt.NDArray[np.uint16]] = None  #: Depth image (H, W). Only present for depth cameras.
 
     @classmethod
-    def color_only(cls, color: np.ndarray) -> "FrameResult":
+    def color_only(cls, color: npt.NDArray[np.uint8]) -> "FrameResult":
         """
         Source is RGB-only; depth will never be present.
 
@@ -31,7 +33,7 @@ class FrameResult:
         return cls(status=FrameStatus.OK, color=color)
 
     @classmethod
-    def depth_only(cls, depth: np.ndarray) -> "FrameResult":
+    def depth_only(cls, depth: npt.NDArray[np.uint16]) -> "FrameResult":
         """
         Source is depth-only; color will never be present.
         
@@ -42,7 +44,7 @@ class FrameResult:
         return cls(status=FrameStatus.OK, depth=depth)
 
     @classmethod
-    def color_and_depth(cls, color: np.ndarray, depth: np.ndarray) -> "FrameResult":
+    def color_and_depth(cls, color: npt.NDArray[np.uint8], depth: npt.NDArray[np.uint16]) -> "FrameResult":
         """
         Source provides both channels (e.g. RealSense aligned frames).
         
@@ -100,11 +102,11 @@ class MultiFrameResult:
     
     def valid_frames(self) -> dict[str, FrameResult]:
         """Only slots whose FrameResult.is_valid is True."""
-        return {name: fr for name, fr in self.frames.items() if fr.is_fully_valid}
+        return {name: fr for name, fr in self.frames.items() if fr.is_fully_valid()}
 
     def is_fully_valid(self) -> bool:
         """True only when every slot has all valid frames"""
-        return all(fr.is_fully_valid for fr in self.frames.values())
+        return all(fr.is_fully_valid() for fr in self.frames.values())
 
     def pending_slots(self) -> list[str]:
         """Slots that are initialised but haven't produced a frame yet."""
