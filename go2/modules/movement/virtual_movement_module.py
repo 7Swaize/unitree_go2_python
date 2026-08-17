@@ -56,7 +56,7 @@ class VirtualCommandHandle:
                 return
 
 
-class VirtualMovementModule(MovementModule):
+class VirtualMovementModule(MovementModule[VirtualCommandHandle]):
     """
     Simulator-backed :class:`MovementModule` implementation that issues sport commands over iceoryx2 IPC
     request/response services rather than the Unitree SDK.

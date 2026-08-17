@@ -5,7 +5,7 @@ from unitree_sdk2py.go2.sport.sport_client import SportClient
 from .movement_module import MovementModule
 
 
-class NativeMovementModule(MovementModule):
+class NativeMovementModule(MovementModule[None]):
     """
     Hardware-backed :class:`MovementModule` implementation that drives the physical Go2 directly through the
     Unitree SDK's ``SportClient``.
@@ -25,7 +25,7 @@ class NativeMovementModule(MovementModule):
             return
 
         self._sport_client = SportClient()
-        self._sport_client.Init()
+        self._sport_client.Init() # type: ignore[no-untyped-call]
         self._sport_client.SetTimeout(3.0)
 
         self._initialized = True
@@ -44,7 +44,7 @@ class NativeMovementModule(MovementModule):
         This mode has the highest priority of any command and is intended for emergency stops in unexpected
         situations. It will override whatever the robot is currently doing.
         """
-        self._sport_client.Damp()
+        self._sport_client.Damp() # type: ignore[no-untyped-call]
 
     @override
     def balance_stand(self) -> None:
@@ -57,7 +57,7 @@ class NativeMovementModule(MovementModule):
         regardless of the terrain underneath it. Once in this mode, posture can be adjusted in real time via
         :meth:`euler`.
         """
-        self._sport_client.BalanceStand()
+        self._sport_client.BalanceStand() # type: ignore[no-untyped-call]
 
     @override
     def stop_move(self) -> None:
@@ -70,7 +70,7 @@ class NativeMovementModule(MovementModule):
         default values. This is the recommended way to terminate a velocity command issued via :meth:`move` when you
         are done with it, rather than letting it simply time out.
         """
-        self._sport_client.StopMove()
+        self._sport_client.StopMove() # type: ignore[no-untyped-call]
 
     @override
     def stand_up(self) -> None:
@@ -84,7 +84,7 @@ class NativeMovementModule(MovementModule):
         this mode can easily cause motor overheating if held too long, so it should be exited (e.g. via
         :meth:`balance_stand` or :meth:`damp`) promptly once it is no longer needed.
         """
-        self._sport_client.StandUp()
+        self._sport_client.StandUp() # type: ignore[no-untyped-call]
 
     @override
     def stand_down(self) -> None:
@@ -96,7 +96,7 @@ class NativeMovementModule(MovementModule):
         This is the locked-joint counterpart to :meth:`stand_up`, lowering the robot's body close to the ground
         instead of standing tall.
         """
-        self._sport_client.StandDown()
+        self._sport_client.StandDown() # type: ignore[no-untyped-call]
 
     def recovery_stand(self) -> None:
         """
@@ -108,7 +108,7 @@ class NativeMovementModule(MovementModule):
         pose. It will always attempt to bring the robot back to a balanced standing position, making it a useful
         general-purpose recovery command after a fall or unexpected disturbance.
         """
-        self._sport_client.RecoveryStand()
+        self._sport_client.RecoveryStand() # type: ignore[no-untyped-call]
 
     def euler(self, roll: float = 0.0, pitch: float = 0.0, yaw: float = 0.0) -> None:
         """
@@ -165,7 +165,7 @@ class NativeMovementModule(MovementModule):
         should only be triggered once the robot's previous action has fully completed. Issuing it mid-action can
         produce abnormal or jerky movement.
         """
-        self._sport_client.Sit()
+        self._sport_client.Sit() # type: ignore[no-untyped-call]
 
     def rise_sit(self) -> None:
         """
@@ -176,7 +176,7 @@ class NativeMovementModule(MovementModule):
         This is the counterpart to :meth:`sit`, used to bring the robot from sitting back up onto its feet in a
         balanced stance.
         """
-        self._sport_client.RiseSit()
+        self._sport_client.RiseSit() # type: ignore[no-untyped-call]
 
     def speed_level(self, level: int) -> None:
         """
@@ -191,11 +191,11 @@ class NativeMovementModule(MovementModule):
 
     def hello(self) -> None:
         """Perform a greeting gesture."""
-        self._sport_client.Hello()
+        self._sport_client.Hello() # type: ignore[no-untyped-call]
 
     def stretch(self) -> None:
         """Perform a stretching motion."""
-        self._sport_client.Stretch()
+        self._sport_client.Stretch() # type: ignore[no-untyped-call]
 
     def switch_joystick(self, flag: bool) -> None:
         """
@@ -216,11 +216,11 @@ class NativeMovementModule(MovementModule):
 
     def content(self) -> None:
         """Perform an expression of happiness."""
-        self._sport_client.Content()
+        self._sport_client.Content() # type: ignore[no-untyped-call]
 
     def heart(self) -> None:
         """Make a heart shape with the front paws."""
-        self._sport_client.Heart()
+        self._sport_client.Heart() # type: ignore[no-untyped-call]
 
     def pose(self, flag: bool) -> None:
         """
@@ -235,7 +235,7 @@ class NativeMovementModule(MovementModule):
 
     def scrape(self) -> None:
         """Bow as a greeting gesture."""
-        self._sport_client.Scrape()
+        self._sport_client.Scrape() # type: ignore[no-untyped-call]
 
     def front_flip(self) -> None:
         """
@@ -247,19 +247,19 @@ class NativeMovementModule(MovementModule):
         it, since Unitree does not accept liability for accidents caused by improper use. It may also accelerate
         hardware wear and reduce the robot's operational lifespan, so it should be used sparingly and with caution.
         """
-        self._sport_client.FrontFlip()
+        self._sport_client.FrontFlip() # type: ignore[no-untyped-call]
 
     def front_jump(self) -> None:
         """Perform a front jump."""
-        self._sport_client.FrontJump()
+        self._sport_client.FrontJump() # type: ignore[no-untyped-call]
 
     def front_pounce(self) -> None:
         """Lunge forward."""
-        self._sport_client.FrontPounce()
+        self._sport_client.FrontPounce() # type: ignore[no-untyped-call]
 
     def dance1(self) -> None:
         """Perform dance sequence 1."""
-        self._sport_client.Dance1()
+        self._sport_client.Dance1() # type: ignore[no-untyped-call]
 
     def free_bound(self, flag: bool) -> None:
         """
@@ -370,7 +370,7 @@ class NativeMovementModule(MovementModule):
         should be used cautiously, and it has no special handling for complex terrain, making it prone to falling on
         uneven ground.
         """
-        self._sport_client.TrotRun()
+        self._sport_client.TrotRun() # type: ignore[no-untyped-call]
 
     def static_walk(self) -> None:
         """
@@ -381,7 +381,7 @@ class NativeMovementModule(MovementModule):
         This is Go2's default gait in normal (non-AI) mode. Like :meth:`trot_run`, it has no special handling for
         complex terrain, but it produces an elegant, stable-looking walking posture on flat ground.
         """
-        self._sport_client.StaticWalk()
+        self._sport_client.StaticWalk() # type: ignore[no-untyped-call]
 
     def switch_avoid_mode(self) -> None:
         """
@@ -394,7 +394,7 @@ class NativeMovementModule(MovementModule):
         This is a fairly niche behavior and is generally not recommended unless you specifically understand and need
         this interaction.
         """
-        self._sport_client.SwitchAvoidMode()
+        self._sport_client.SwitchAvoidMode() # type: ignore[no-untyped-call]
 
     def auto_recovery_set(self, flag: bool) -> None:
         """
@@ -422,5 +422,5 @@ class NativeMovementModule(MovementModule):
         bool
             True if auto-recovery is enabled, False otherwise.
         """
-        _, flag = self._sport_client.AutoRecoveryGet()
-        return flag
+        _, flag = self._sport_client.AutoRecoveryGet() # type: ignore[no-untyped-call]
+        return bool(flag)

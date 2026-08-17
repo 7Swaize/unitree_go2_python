@@ -1,9 +1,12 @@
 from typing import Callable, Optional
 from typing_extensions import override
 
+from unitree_sdk2py.idl.unitree_go.msg.dds_ import LowState_
+from unitree_sdk2py.core.channel import ChannelSubscriber
+
 from ...core.module import DogModule
 from ...communication.dds import DDSTopics
-from .callback_manager import InputSignalCallbackManager, UnitreeRemoteControllerInputParser
+from .callback_manager import InputSignalCallbackManager, UnitreeRemoteControllerInputParser, Callback
 from .controller_state import ControllerState
 from .input_signal import InputSignal
 
@@ -27,9 +30,6 @@ class InputModule(DogModule):
         - If `use_sdk` is False, no live input is initialized
         - Internal: subscribes to DDS LOW_STATE topic for live controller messages
         """
-        from unitree_sdk2py.idl.unitree_go.msg.dds_ import LowState_
-        from unitree_sdk2py.core.channel import ChannelSubscriber
-
         self._input_parser = UnitreeRemoteControllerInputParser()
         self._callback_manager = InputSignalCallbackManager()
 
@@ -42,7 +42,7 @@ class InputModule(DogModule):
         callback: Callable[[ControllerState], None],
         name: Optional[str] = None,
         threshold: float = 0.1
-    ):
+    ) -> Callback:
         """
         Register a callback for a specific controller signal.
 
@@ -92,11 +92,11 @@ class InputModule(DogModule):
         - Should be called when input is no longer needed
         """
         if self._lowstate_subscriber:
-            self._lowstate_subscriber.Close()
+            self._lowstate_subscriber.Close() # type: ignore[no-untyped-call]
         if self._callback_manager:
             self._callback_manager._shutdown()
 
-    def _process_input(self, msg) -> ControllerState:
+    def _process_input(self, msg: LowState_) -> ControllerState:
         """
         Process incoming controller messages.
 
@@ -110,7 +110,7 @@ class InputModule(DogModule):
         ControllerState
             Current controller state after parsing
         """
-        controller_state = self._input_parser._parse(msg.wireless_remote)
+        controller_state = self._input_parser._parse(msg)
         self._callback_manager._handle(controller_state)
 
         return controller_state

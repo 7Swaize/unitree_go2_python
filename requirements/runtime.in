@@ -1,7 +1,6 @@
 # Core libraries
 numpy
 opencv-python
-open3d
 pyyaml
 
 # Depth Camera
@@ -15,10 +14,3 @@ pytesseract
 aiortc
 av
 aiohttp
-pyzmq
-
-# ROS 2 build / Python dependencies
-colcon-common-extensions
-empy
-catkin_pkg
-lark-parser

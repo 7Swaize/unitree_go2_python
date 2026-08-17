@@ -1,6 +1,7 @@
-from typing import Union
-from typing_extensions import override, overload
 import numpy as np
+import numpy.typing as npt
+from typing import Union, Any
+from typing_extensions import override, overload
 
 from ...core.module import DogModule
 from .streaming.streamer import WebRTCStreamer
@@ -38,7 +39,6 @@ class VideoModule(DogModule):
         super().__init__("Video")
         self._camera_source = camera_source
         self._stream_config = stream_config
-        self._streamer = None
         self._streaming = False
         
 
@@ -93,15 +93,14 @@ class VideoModule(DogModule):
         self._streamer._start_in_thread()
         self._streaming = True
 
-    def send_frame(self, frame: np.ndarray) -> None:
+    def send_frame(self, frame: npt.NDArray[Any]) -> None:
         """
         Send a video frame to connected streaming clients.
 
         Parameters
         ----------
         frame : numpy.ndarray
-            An image frame to stream (typically obtained from
-            :meth:`get_frames`).
+            An image frame to stream (typically obtained from :meth:`get_frames`).
 
         Raises
         ------
@@ -173,7 +172,6 @@ class VideoModule(DogModule):
 
         if self._streamer:
             self._streamer._shutdown()
-            self._streamer = None
 
         self._streaming = False
         self._initialized = False

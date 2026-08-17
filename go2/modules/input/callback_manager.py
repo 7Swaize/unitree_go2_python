@@ -1,5 +1,5 @@
-from dataclasses import dataclass, fields, replace
 import struct
+from dataclasses import dataclass, fields, replace
 from typing import Callable, Dict, List, Optional
 
 from ...logging import get_logger
@@ -173,7 +173,7 @@ class InputSignalCallbackManager:
         previous_y = getattr(self._previous_state, y_attr, 0.0)
         
         # vector magnitude of x and y components
-        distance = ((current_x - previous_x) ** 2 + (current_y - previous_y) ** 2) ** 0.5
+        distance: float = ((current_x - previous_x) ** 2 + (current_y - previous_y) ** 2) ** 0.5
         return distance > threshold
 
 
@@ -224,7 +224,7 @@ class UnitreeRemoteControllerInputParser:
             setattr(self._state, attr, (data2 >> i) & 1)
 
 
-    def _parse_analog(self, data: bytes):
+    def _parse_analog(self, data: bytes) -> None:
         """
         Decode analog stick and trigger values from raw bytes.
 
@@ -239,8 +239,7 @@ class UnitreeRemoteControllerInputParser:
         self._state.l2 = struct.unpack('<f', data[16:20])[0]
 
 
-    # remote_data is some type that is an array of 8-bit-seqs
-    def _parse(self, remote_data) -> ControllerState:
+    def _parse(self, remote_data) -> ControllerState: # type: ignore[no-untyped-def]
         """
         Parse raw remote input into :class:`~modules.input.controller_state.ControllerState`.
 
