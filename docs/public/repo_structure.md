@@ -16,6 +16,7 @@
 ├── examples
 │   ├── aruco_markers
 │   ├── modules
+│   │   ├── lidar
 │   │   ├── movement
 │   │   ├── ocr
 │   │   └── video
@@ -24,19 +25,15 @@
 ├── go2
 │   ├── communication
 │   ├── core
-│   ├── hardware
-│   │   ├── native
-│   │   └── virtual
-│   ├── modules
-│   │   ├── audio
-│   │   ├── input
-│   │   ├── lidar
-│   │   ├── movement
-│   │   ├── ocr
-│   │   └── video
-│   │       ├── sources
-│   │       └── streaming
-│   └── states
+│   └── modules
+│       ├── audio
+│       ├── input
+│       ├── lidar
+│       ├── movement
+│       ├── ocr
+│       └── video
+│           ├── sources
+│           └── streaming
 ├── refs
 │   ├── condarefs
 │   └── ubunturefs
@@ -57,13 +54,13 @@
 `compute/` - Python-callable utilities written in C++.
 
 `docs/internal/` - Markdown files for building API documentation. \
-`docs/internal/api/` - Markdown files for building student-facing API documentation. \
-`docs/internal/dev/` - Markdown files for building developer-facing API documentation.
+`docs/internal/api/` - Markdown files for building student-facing API documentation.
 
 `docs/public/` - Formatted documentation for students regarding the SDK itself.
 
 `examples/` - SDK usage examples. \
 `examples/aruco_markers/` - Examples for detecting and reacting to Aruco markers. \
+`examples/modules/lidar/` - Examples for working with the controller's LIDAR capabilities. \
 `examples/modules/movement/` - Examples for working with the controller's movement capabilities. \
 `examples/modules/ocr/` - Examples for working with the controller's OCR capabilities. \
 `examples/modules/video/` - Examples for working with the controller's video capabilities. \
@@ -72,9 +69,7 @@
 `go2/` - Python package containing all SDK functionalities. \
 `go2/communication/` - CycloneDDS configurations. \
 `go2/core/` - Core SDK functionalities. \
-`go2/hardware/` - Wrappers for accessing the underlying robot (Native Hardware) or simulator (Virtual Hardware) communications. \
 `go2/modules/` - Implementation code for each module (robot functionality) supported by the SDK. \
-`go2/states/` - Code for supporting a state-machine architecture on the robot.
 
 `refs/condarefs/` - Captured packages for school conda environment. \
 `refs/ubunturefs/` - Information about school Ubuntu device.
