@@ -8,8 +8,8 @@ This installation consists of two steps: first, installing the shared Iceoryx2 c
 ```bash
 cd $GO2_WS
 git clone https://github.com/7Swaize/unitree_mujoco.git
-git switch v1.1.0
 cd unitree_mujoco
+git switch v1.1.0
 ```
 
 ## Install Mujoco
