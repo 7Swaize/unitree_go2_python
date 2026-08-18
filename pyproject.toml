@@ -39,7 +39,7 @@ include = ["go2*"]
 
 # https://stackoverflow.com/questions/76073605/add-py-typed-as-package-data-with-setuptools-in-pyproject-toml
 [tool.setuptools.package-data]
-"pkgname" = ["py.typed"]
+"go2" = ["py.typed"]
 
 
 [tool.mypy]
