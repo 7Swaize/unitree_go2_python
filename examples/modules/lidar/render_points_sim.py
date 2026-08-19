@@ -65,7 +65,6 @@ def main() -> None:
     renderer = Renderer()
 
     # Register a callback that gets invoked whenever the controller gets a new set of points.
-    # It's important to not that received points are Fortran-contiguous.
     controller.lidar.register_decoded_pointcloud_callback(renderer._decoded_callback)
     controller.movement.stand_up().wait()
 
