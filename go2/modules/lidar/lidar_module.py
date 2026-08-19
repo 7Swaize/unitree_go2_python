@@ -54,8 +54,8 @@ class LIDARModule(DogModule, ABC):
         callback : Callable[[int, np.ndarray], None]
             A function to be called with:
                 - **timestamp** (int): The source timestamp in nanoseconds.
-                - **points** (np.ndarray): A **Fortran-contiguous** ``float32`` array of shape ``(3, N)``
-                    for [x, y, z] or ``(4, N)`` if intensity is supported [x, y, z, intensity].
+                - **points** (np.ndarray): A **C-contiguous** ``float32`` array of shape ``(N, 3)``
+                    for [x, y, z] or ``(N, 4)`` if intensity is supported [x, y, z, intensity].
 
         Important
         ---------
@@ -65,10 +65,9 @@ class LIDARModule(DogModule, ABC):
             through the returned view is unsafe, as it affects the shared data. If 
             you need to modify the data, create a **copy** first.
         - **Cache Locality & Iteration:**
-            Because the array is Fortran-contiguous, the 
-            data is laid out column-by-column in memory (e.g., x0, y0, z0, x1, y1, z1...). 
+            Because the array is C-contiguous, the data is laid out row-by-row in memory (e.g., x0, y0, z0, x1, y1, z1...). 
             This means all coordinates (plus intensity) for a single point are tightly packed together. 
-            Therefore, column-major iteration should be greatly prefered over row-major iteration to maximize cache efficiency.
-            If you *need* a C-contiguous array (row-major) you can use use ``numpy.ascontiguousarray(array)``.
+            Therefore, row-major iteration should be greatly prefered over column-major iteration to maximize cache efficiency.
+            If you *need* a F-contiguous array (column-major) you can use use ``numpy.asfortranarray(array)``.
         """
         self._dispatcher._register_decoded(callback)
