@@ -68,7 +68,8 @@ def _build_complex_xyzi() -> np.ndarray:
     intensity = np.linspace(100.0, 500.0, 1000)
     dataset = np.column_stack((xyz, intensity))
 
-    return np.asfortranarray(dataset, dtype=np.float32)
+    # (N, channels) layout, C-contiguous - matches the decoder's native output layout.
+    return np.ascontiguousarray(dataset, dtype=np.float32)
 
 
 def _wait_for_response(pending_response: iox2.PendingResponse, timeout: float) -> iox2.Response:
@@ -84,29 +85,29 @@ def _wait_for_response(pending_response: iox2.PendingResponse, timeout: float) -
 
 
 class TestLidarBridgeSendDecoded(unittest.TestCase):
-    def test_send_decoded_does_not_raise_for_various_shapes_f_contiguous(self):
+    def test_send_decoded_does_not_raise_for_various_shapes_c_contiguous(self):
         bridge = LidarBridge()
 
         bridge.send_decoded(
             stamp_ns=1,
-            array=np.zeros((0, 3), dtype=np.float32, order="F"),
+            array=np.zeros((0, 3), dtype=np.float32, order="C"),
         )
         bridge.send_decoded(
             stamp_ns=2,
-            array=np.ones((10, 3), dtype=np.float32, order="F"),
+            array=np.ones((10, 3), dtype=np.float32, order="C"),
         )
         bridge.send_decoded(
             stamp_ns=3,
-            array=np.ones((10, 4), dtype=np.float32, order="F"),
+            array=np.ones((10, 4), dtype=np.float32, order="C"),
         )
 
-    def test_send_decoded_sub_raises_for_array_c_contiguous(self):
+    def test_send_decoded_sub_raises_for_array_f_contiguous(self):
         bridge = LidarBridge()
 
-        with pytest.raises(AssertionError, match="Array must be float32 and F-contiguous"):
+        with pytest.raises(AssertionError, match="Array must be float32 and C-contiguous"):
             bridge.send_decoded(
                 stamp_ns=1,
-                array=np.zeros((3, 2), dtype=np.float32, order="C"),
+                array=np.zeros((3, 2), dtype=np.float32, order="F"),
             )
 
     def test_subscriber_receives_exactly_what_was_sent_xyz_simple(self):
@@ -124,10 +125,9 @@ class TestLidarBridgeSendDecoded(unittest.TestCase):
         assert bridge._active_request is not None, "Bridge never received the client's request"
 
         points = np.array([
-            [1.0, 4.0],
-            [2.0, 5.0],
-            [3.0, 6.0]
-        ], dtype=np.float32, order='F')
+            [1.0, 2.0, 3.0],
+            [4.0, 5.0, 6.0]
+        ], dtype=np.float32, order='C')
 
         bridge.send_decoded(stamp_ns=99, array=points)
         response = _wait_for_response(pending_response=pending_response, timeout=5)
@@ -154,7 +154,6 @@ class TestLidarBridgeSendDecoded(unittest.TestCase):
         self._assert_response_matches_sent(response, points, expected_stamp_ns=99)
 
     def _assert_response_matches_sent(self, response: iox2.Response, points:np.ndarray, expected_stamp_ns: int = 99):
-        """Helper method to rebuild the numpy array from the response and assert correctness."""
         data_ptr = ctypes.cast(response.payload().as_ptr(), ctypes.POINTER(ctypes.c_float))
         rows = response.user_header().contents.rows
         cols = response.user_header().contents.cols
@@ -165,15 +164,15 @@ class TestLidarBridgeSendDecoded(unittest.TestCase):
             shape=(rows, cols),
             dtype=np.float32,
             buffer=(ctypes.c_float * (rows * cols)).from_address(ctypes.addressof(data_ptr.contents)),
-            strides=(itemsize, rows * itemsize)
-        ).copy(order='F')
+            strides=(cols * itemsize, itemsize)
+        ).copy(order='C')
 
         assert stamp_ns == expected_stamp_ns
         assert rows == points.shape[0]
         assert cols == points.shape[1]
 
         np.testing.assert_equal(received, points)
-        self.assertTrue(points.flags.f_contiguous)
+        self.assertTrue(points.flags.c_contiguous)
         self.assertEqual(points.dtype, np.float32)
 
 

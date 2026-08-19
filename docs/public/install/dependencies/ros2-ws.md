@@ -166,3 +166,22 @@ source /opt/ros/humble/setup.bash
 colcon build
 source install/setup.bash
 ```
+
+
+# ROS 2 Workspace — Optional Configuration
+
+This workspace hosts ROS 2 nodes that subscribe to `PointCloud2` streams published by the physical robot and decode the packed LiDAR point data into NumPy arrays. Some optional configuration is available for this process.
+
+Inside the path `$GO2_WS/go2-control/ros2_ws/src/bringup/config`, there is a file called `lidar_processor.yaml`, which looks like this:
+
+```yaml
+lidar_decoder:
+  ros__parameters:
+    collection:
+      optimize_collection: true
+      skip_nans: true
+```
+
+**`optimize_collection`** — When enabled, invokes a C++-backed decoder instead of the standard NumPy/Python decoder. It is **highly recommended** to keep this set to `true`, as it provides significant performance benefits (mentioned [here](https://github.com/7Swaize/go2-control/issues/98#issuecomment-5336533295)).
+
+**`skip_nans`** — Skips NaN values during collection. This incurs a performance hit, since it requires per-point scalar reads from the byte buffer instead of vectorized `memcpy` invocations (in the standard case).
