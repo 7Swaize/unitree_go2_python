@@ -66,6 +66,7 @@ In this step, we will clone the go2-control wrapper code. However, we will build
 ```bash
 cd $GO2_WS
 git clone https://github.com/7Swaize/go2-control.git
+cd go2-control/
 git switch v1.1.0
 ```
 

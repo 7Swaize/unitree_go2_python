@@ -7,7 +7,7 @@ Installation directions adapted from: [iceoryx2-cxx README](https://github.com/e
 
 ## Clone Repository
 
-We will be using Iceoryx2 version 0.8.1.  We will be working detached from the live repository.
+We will be using Iceoryx2 version 0.9.0.  We will be working detached from the live repository.
 
 ```bash
 cd $GO2_WS
