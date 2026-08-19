@@ -109,21 +109,17 @@ def init_pointcloud_layout(msg: PointCloud2) -> PointCloudLayout:
 
 def decode_unoptimized(msg: PointCloud2, layout: PointCloudLayout, skip_nans: bool):
     if layout.has_intensity:
-        data = point_cloud2.read_points_numpy(
+        return point_cloud2.read_points_numpy(
             msg,
             field_names=["x", "y", "z", "intensity"],
             skip_nans=skip_nans,
         ).astype(np.float32)
-        xyz = data[:, :3]
-        intensity = data[:, 3]
     else:
-        xyz = point_cloud2.read_points_numpy(
+        return point_cloud2.read_points_numpy(
             msg,
             field_names=["x", "y", "z"],
             skip_nans=skip_nans,
         ).astype(np.float32)
-        intensity = None
-    return xyz, intensity
  
  
 def decode_optimized(msg: PointCloud2, layout: PointCloudLayout, skip_nans: bool):
@@ -137,7 +133,7 @@ def decode_optimized(msg: PointCloud2, layout: PointCloudLayout, skip_nans: bool
         msg.is_bigendian,
         layout.xyz_internal_type,
         layout.intensity_internal_type,
-        skip_nans,
+        skip_nans
     )
  
  
@@ -168,16 +164,14 @@ def layout(cloud_msg):
 
 @pytest.mark.benchmark(group="decode")
 def test_decode_unoptimized(benchmark, cloud_msg, layout, skip_nans):
-    xyz, intensity = benchmark(decode_unoptimized, cloud_msg, layout, skip_nans)
-    assert xyz.shape[1] == 3
-    assert xyz.dtype == np.float32
+    out = benchmark(decode_unoptimized, cloud_msg, layout, skip_nans)
+    assert out.dtype == np.float32
  
  
 @pytest.mark.benchmark(group="decode")
 def test_decode_optimized(benchmark, cloud_msg, layout, skip_nans):
-    xyz, intensity = benchmark(decode_optimized, cloud_msg, layout, skip_nans)
-    assert xyz.shape[1] == 3
-    assert xyz.dtype == np.float32
+    out = benchmark(decode_optimized, cloud_msg, layout, skip_nans)
+    assert out.dtype == np.float32
 
 
 '''

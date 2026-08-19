@@ -1,6 +1,7 @@
 import ctypes
 import threading
 import numpy as np
+import numpy.typing as npt
 import iceoryx2 as iox2
 from typing import Optional
 
@@ -44,7 +45,7 @@ class LidarBridge(metaclass=Singleton):
                 break
             
 
-    def send_decoded(self, stamp_ns: int, array: np.ndarray) -> None:
+    def send_decoded(self, stamp_ns: int, array: npt.NDArray[np.float32]) -> None:
         assert array.dtype == np.float32 and array.flags.f_contiguous, "Array must be float32 and F-contiguous"
 
         if not self._active_request or not self._active_request.is_connected:

@@ -1,5 +1,6 @@
 import numpy as np
-from typing import Optional
+import numpy.typing as npt
+from typing import Any, Optional
 from dataclasses import dataclass
 import fast_pointcloud as fp
 
@@ -53,7 +54,7 @@ class LidarDecoderNode(Node):
             reliability=QoSReliabilityPolicy.BEST_EFFORT,
             history=QoSHistoryPolicy.KEEP_LAST,
             depth=5
-        )
+        ) 
 
         self._pc_layout: Optional[PointCloudLayout] = None
         self._bridge = LidarBridge()
@@ -66,14 +67,14 @@ class LidarDecoderNode(Node):
             namespace="",
             parameters=[
                 ("collection.optimize_collection", rclpy.Parameter.Type.BOOL),
-                ("collection.skip_nans", rclpy.Parameter.Type.BOOL),   
+                ("collection.skip_nans", rclpy.Parameter.Type.BOOL),
             ]
         )
 
 
     def _load_configuration(self) -> CollectionConfig:
-        optimize_collection = self.get_parameter('collection.optimize_collection').get_parameter_value().bool_value
-        skip_nans = self.get_parameter('collection.skip_nans').get_parameter_value().bool_value
+        optimize_collection = self.get_parameter('collection.optimize_collection').get_parameter_value().bool_value 
+        skip_nans = self.get_parameter('collection.skip_nans').get_parameter_value().bool_value 
 
         return CollectionConfig(
             optimize_collection=optimize_collection,
@@ -141,18 +142,14 @@ class LidarDecoderNode(Node):
                     field_names=["x", "y", "z", "intensity"],
                     skip_nans=self._config.skip_nans
                 ).astype(np.float32, copy=False)
-
-                xyz = data[:, :3]
-                intensity = data[:, 3]
             else:
-                xyz = point_cloud2.read_points_numpy(
+                data = point_cloud2.read_points_numpy(
                     msg,
                     field_names=["x", "y", "z"],
                     skip_nans=self._config.skip_nans
                 ).astype(np.float32, copy=False)
-                intensity = None
 
-            self._send_to_bridge(xyz, intensity, msg.header)
+            self._send_to_bridge(data, msg.header)
 
         except Exception as e:
             self.get_logger().error(f"Error processing LiDAR data: {e}")
@@ -161,7 +158,7 @@ class LidarDecoderNode(Node):
     def lidar_callback_optimized(self, msg: PointCloud2) -> None:
         try:
             layout = self._get_layout(msg)
-            xyz, intensity = fp.decode_xyz_intensity(
+            data = fp.decode_xyz_intensity(
                 msg.data,
                 msg.point_step,
                 layout.x_offset,
@@ -174,21 +171,15 @@ class LidarDecoderNode(Node):
                 self._config.skip_nans
             )
 
-            self._send_to_bridge(xyz, intensity, msg.header)
+            self._send_to_bridge(data, msg.header)
 
         except Exception as e:
             self.get_logger().error(f"Error processing LiDAR data: {e}")
             
 
-    def _send_to_bridge(self, xyz: np.ndarray, intensity: Optional[np.ndarray], src_pc_header: Header) -> None:
+    def _send_to_bridge(self, points: npt.NDArray[np.float32], src_pc_header: Header) -> None:
         stamp_ns = src_pc_header.stamp.sec * 1_000_000_000 + src_pc_header.stamp.nanosec
-
-        if intensity is None:
-            points = np.asfortranarray(xyz.T)
-        else:
-            points = np.empty((4, xyz.shape[0]), dtype=xyz.dtype, order="F")
-            points[:3, :] = xyz.T
-            points[3, :] = intensity
+        points = np.asfortranarray(points.T)
 
         self._bridge.send_decoded(stamp_ns, points)
 
@@ -197,7 +188,7 @@ class LidarDecoderNode(Node):
         self._bridge.shutdown()
 
 
-def main(args=None):
+def main(args: Any = None) -> None:
     rclpy.init(args=args)
     node = LidarDecoderNode()
 
@@ -209,7 +200,7 @@ def main(args=None):
         print(f"Error running lidar decoder: {e}")
     finally:
         node.shutdown_ext()
-        node.destroy_node()
+        node.destroy_node() 
         if rclpy.ok():
             rclpy.shutdown()
 

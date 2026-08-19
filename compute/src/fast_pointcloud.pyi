@@ -1,5 +1,5 @@
-from typing import Tuple, Optional
-import numpy
+import numpy as np
+import numpy.typing as npt
 
 
 PointFieldType: dict[str, int]
@@ -22,33 +22,44 @@ def decode_xyz_intensity(
     dtype_xyz: int,
     dtype_intensity: int,
     skip_nans: int
-) -> Tuple[numpy.ndarray, Optional[numpy.ndarray]]:
+) -> npt.NDArray[np.float32]:
     """
-    Decode XYZ (+ optional intensity) from a PointCloud2 byte buffer.
+    Decode XYZ coordinates and optionally intensity from a PointCloud2 buffer.
+
+    The returned array is a compact, owning NumPy array with one row per
+    decoded point. Each row contains ``[x, y, z]`` when intensity is absent,
+    or ``[x, y, z, intensity]`` when intensity is present.
 
     Parameters
     ----------
     data : bytes
-        Raw point cloud data.
+        Raw PointCloud2 point data.
     point_step : int
-        Size of one point in bytes.
+        Size of each point record in bytes.
     ox, oy, oz : int
-        Offsets of x, y, z fields in bytes.
+        Byte offsets of the x, y, and z fields within each point record.
     oi : int
-        Offset of intensity field (-1 if none).
+        Byte offset of the intensity field within each point record, or
+        ``-1`` if no intensity field is present.
     is_bigendian : int
-        Endianness flag (1 = big-endian, 0 = little-endian).
+        PointCloud2 endianness flag. ``1`` indicates big-endian data and
+        ``0`` indicates little-endian data.
     dtype_xyz : int
-        Data type of XYZ fields (PF_* constants).
+        Point field datatype of the x, y, and z fields, using ``PF_*``
+        constants.
     dtype_intensity : int
-        Data type of intensity field (PF_* constants).
+        Point field datatype of the intensity field, using ``PF_*``
+        constants. Ignored when ``oi == -1``.
     skip_nans : int
-        Whether to skip points with NaNs.
+        If nonzero, omit points containing a NaN in any decoded field.
+        Otherwise, all points are returned.
 
     Returns
     -------
-    Tuple[numpy.ndarray, Optional[numpy.ndarray]]
-        xyz : ndarray of shape (n_points, 3), dtype float32
-        intensity : ndarray of shape (n_points,) or None
+    numpy.ndarray
+        A two-dimensional ``float32`` array of shape ``(n, 3)`` when
+        intensity is absent or ``(n, 4)`` when intensity is present.
+        When ``skip_nans`` is nonzero, ``n`` may be smaller than the number
+        of points in the input buffer.
     """
     ...

@@ -107,6 +107,24 @@ class DecoderBehaviorMixin:
         self.assertTrue(points.flags.f_contiguous)
         self.assertEqual(points.dtype, np.float32)
 
+    def test_drops_nan_rows_so_only_valid_points_are_forwarded(self):
+        xyz = np.array([
+            [1.0, 2.0, 3.0],
+            [np.nan, 5.0, 6.0],
+            [7.0, 8.0, 9.0],
+        ], dtype=np.float32)
+        cloud = make_pointcloud2(xyz)
+
+        self._run(cloud)
+
+        self.node._bridge.send_decoded.assert_called_once()
+        _, points = self.node._bridge.send_decoded.call_args[0]
+
+        self.assertEqual(points.shape, (3, 2))
+        np.testing.assert_allclose(points, xyz[[0, 2], :].T, atol=1e-4)
+        self.assertTrue(points.flags.f_contiguous)
+        self.assertEqual(points.dtype, np.float32)
+
     def test_uses_correct_stamp(self):
         xyz = np.array([[1.0, 2.0, 3.0]], dtype=np.float32)
         cloud = make_pointcloud2(xyz)
