@@ -46,7 +46,7 @@ class LidarBridge(metaclass=Singleton):
             
 
     def send_decoded(self, stamp_ns: int, array: npt.NDArray[np.float32]) -> None:
-        assert array.dtype == np.float32 and array.flags.f_contiguous, "Array must be float32 and F-contiguous"
+        assert array.dtype == np.float32 and array.flags.c_contiguous, "Array must be float32 and C-contiguous"
 
         if not self._active_request or not self._active_request.is_connected:
             return

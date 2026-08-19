@@ -180,7 +180,7 @@ class LidarDecoderNode(Node):
 
     def _send_to_bridge(self, points: npt.NDArray[np.float32], src_pc_header: Header) -> None:
         stamp_ns = src_pc_header.stamp.sec * 1_000_000_000 + src_pc_header.stamp.nanosec
-        points = np.asfortranarray(points.T)
+        points = np.ascontiguousarray(points)
 
         self._bridge.send_decoded(stamp_ns, points)
 
