@@ -58,7 +58,7 @@ class IoxReceiver(threading.Thread):
                         shape=(rows, cols),
                         dtype=np.float32,
                         buffer=(ctypes.c_float * (rows * cols)).from_address(ctypes.addressof(data_ptr.contents)),
-                        strides=(itemsize, cols * itemsize)
+                        strides=(cols * itemsize, itemsize)
                     ).copy(order='C')
                 )
 

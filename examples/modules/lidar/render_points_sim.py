@@ -30,10 +30,7 @@ class Renderer:
 
 
     def _decoded_callback(self, stamp_ns: int, points: np.ndarray) -> None:
-        if points.shape[0] == 3 and points.shape[1] != 3:
-            points = points.T  # (3, N) -> (N, 3)
-
-        self._latest_points = points.copy()
+        self._latest_points = points
         self._latest_stamp = stamp_ns
 
 
