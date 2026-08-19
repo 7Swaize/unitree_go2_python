@@ -19,6 +19,7 @@ def decode_xyz_intensity(
     oz: int,
     oi: int,
     is_bigendian: int,
+    is_dense: int,
     dtype_xyz: int,
     dtype_intensity: int,
     skip_nans: int
@@ -44,6 +45,8 @@ def decode_xyz_intensity(
     is_bigendian : int
         PointCloud2 endianness flag. ``1`` indicates big-endian data and
         ``0`` indicates little-endian data.
+    is_dense : int
+        Dense flag. ``1`` indicates dense data and ``0`` indicates not dense data.
     dtype_xyz : int
         Point field datatype of the x, y, and z fields, using ``PF_*``
         constants.

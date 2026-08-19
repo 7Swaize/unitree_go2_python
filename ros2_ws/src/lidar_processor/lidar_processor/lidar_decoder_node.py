@@ -166,6 +166,7 @@ class LidarDecoderNode(Node):
                 layout.z_offset,
                 layout.intensity_offset,
                 msg.is_bigendian,
+                msg.is_dense,
                 layout.xyz_internal_type,
                 layout.intensity_internal_type,
                 self._config.skip_nans

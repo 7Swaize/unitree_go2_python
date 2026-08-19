@@ -225,10 +225,10 @@ decode_kernel_t select_laned_decode_kernel_spec(bool has_intensity, bool padded_
 }
 
 decode_kernel_t select_decode_kernel(PointFieldType dtype_xyz, bool has_intensity, PointFieldType dtype_intensity,
-                                      bool swap, bool skip_nans,
+                                      bool swap, bool skip_nans, bool is_dense,
                                       int point_step, int ox, int oy, int oz, int oi)
 {
-    if (swap || skip_nans) {
+    if (swap || (skip_nans && !is_dense)) {
         return select_generic_decode_kernel_spec(dtype_xyz, has_intensity, dtype_intensity, swap, skip_nans);
     }
 
@@ -277,11 +277,11 @@ extern "C" __attribute__((unused)) PyObject* decode_xyz_intensity(PyObject* self
 
     PyObject* data_obj;
     int point_step, ox, oy, oz, oi;
-    int is_bigendian, dtype_xyz_val, dtype_intensity_val, skip_nans;
+    int is_bigendian, is_dense, dtype_xyz_val, dtype_intensity_val, skip_nans;
 
-    if (!PyArg_ParseTuple(args, "Oiiiiiiiii", 
+    if (!PyArg_ParseTuple(args, "Oiiiiiiiiii", 
             &data_obj, &point_step, &ox, &oy, &oz, &oi,
-            &is_bigendian, &dtype_xyz_val, &dtype_intensity_val, &skip_nans))
+            &is_bigendian, &is_dense, &dtype_xyz_val, &dtype_intensity_val, &skip_nans))
     {
         return nullptr;
     }
@@ -305,7 +305,20 @@ extern "C" __attribute__((unused)) PyObject* decode_xyz_intensity(PyObject* self
     const char* RESTRICT base = static_cast<const char*>(buf.get().buf);
     bool swap = (host_little_endian() == static_cast<bool>(is_bigendian));
 
-    decode_kernel_t kern = select_decode_kernel(dtype_xyz, has_intensity, dtype_intensity, swap, skip_nans, point_step, ox, oy, oz, oi);
+    decode_kernel_t kern = select_decode_kernel(
+        dtype_xyz,
+        has_intensity,
+        dtype_intensity,
+        swap,
+        skip_nans,
+        is_dense,
+        point_step,
+        ox,
+        oy,
+        oz,
+        oi
+    );
+
     if (!kern) {
         PyErr_SetString(PyExc_ValueError, "Unsupported dtype combination.");
         return nullptr;
