@@ -261,7 +261,7 @@ class Go2Controller(ABC):
         -----
         - This method is **idempotent** and may be safely called multiple times.
         """
-        logger.info("\n[Controller] Starting safe shutdown...")
+        logger.debug("\n[Controller] Starting safe shutdown...")
 
         with self._shutdown_lock:
             if self._shutdown_event.is_set():
@@ -272,21 +272,26 @@ class Go2Controller(ABC):
                 try:
                     callback()
                 except Exception:
-                    logger.exception("[Controller] Cleanup callback failed")
+                    callback_name = getattr(callback, "__name__", repr(callback))
+                    logger.exception(f"[Controller] Pre-shutdown cleanup callback '{callback_name}' failed")
 
             for module_type, module in self._modules.items():
                 try:
                     module._shutdown()
                 except Exception:
-                    logger.exception(f"[Controller] Failed to shutdown {module_type.name}")
+                    logger.exception(
+                        f"[Controller] Failed to shutdown module '{module_type.name}' "
+                        f"({type(module).__name__})"
+                    )
 
             for callback in self._cleanup_callbacks_post_module_shutdown:
                 try:
                     callback()
                 except Exception:
-                    logger.exception("[Controller] Cleanup callback failed")
+                    callback_name = getattr(callback, "__name__", repr(callback))
+                    logger.exception(f"[Controller] Post-shutdown cleanup callback '{callback_name}' failed")
             
-        logger.info("[Controller] Shutdown complete")
+        logger.debug("[Controller] Shutdown complete")
 
 
 
