@@ -37,14 +37,13 @@ T = TypeVar("T", bound=DogModule)
 class Go2Controller(ABC):
     """    
     Primary control interface for the Unitree Go2 robot.
-
     This is the shared base for :class:`NativeGo2Controller` and :class:`VirtualGo2Controller`.
     It manages hardware initialization, module lifecycles, safety checks, and shutdown.
 
     Modules are accessed via properties rather than direct instantiation.
 
-    Notes
-    -----
+    Note
+    ----
         - All hardware access is routed through this controller.
         - Modules creation, initialization, and shutdown is handled automatically.
         - Supports both SDK-backed hardware and a Mujoco simulation.
@@ -299,8 +298,15 @@ class NativeGo2Controller(Go2Controller):
     """
     Controller for a physical Go2 robot.
 
-    Exposes every module, including :attr:`input`, and returns :class:`NativeMovementModule`
-    from :attr:`movement`.
+    Exposes every module, including :attr:`input`, and returns :class:`NativeMovementModule` from :attr:`movement`.
+
+    Note
+    ----
+    This controller reads the network interface to use for CycloneDDS from ``sys.argv[1]``:
+        - If no argument is provided (``len(sys.argv) < 2``), it initializes on domain ``1``
+          using the loopback interface ``"lo"``.
+        - If an argument is provided, it is treated as the name of the network interface
+          (e.g. ``"eth0"``) to bind to, and initialization uses domain ``0``.
     """
 
     def __init__(self, execution_mode: ExecutionMode = ExecutionMode.BASIC) -> None:

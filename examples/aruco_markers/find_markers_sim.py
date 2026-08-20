@@ -114,7 +114,7 @@ class MarkerScanProgram:
 
 
     def _scan_for_marker(self, target_marker_id: int) -> None:
-        while True:
+        while not self._shutdown_event.is_set():
             _, found, marker_id, _, h_offset, _ = self._get_marker_state(target_marker_id)
             if not found:
                 self._controller.movement.move(0, 0, MarkerScanProgram.SEARCH_ROTATE_VELOCITY)
@@ -122,7 +122,7 @@ class MarkerScanProgram:
 
             self._controller.movement.stop_move().wait()
 
-            while True:
+            while not self._shutdown_event.is_set():
                 aligned = self._correct_alignment_to_marker(
                     marker_id, h_offset, MarkerScanProgram.H_OFFSET_THRESHOLD, MarkerScanProgram.CORRECT_ALIGNMENT_VELOCITY
                 )
@@ -143,7 +143,7 @@ class MarkerScanProgram:
 
 
     def _wait_for_frame(self) -> np.ndarray:
-        while True:
+        while not self._shutdown_event.is_set():
             frame = self._video_worker.get_latest_frame()
             if frame is not None:
                 return frame
