@@ -30,6 +30,9 @@ class InputModule(DogModule):
         - If `use_sdk` is False, no live input is initialized
         - Internal: subscribes to DDS LOW_STATE topic for live controller messages
         """
+        if self._initialized:
+            return
+
         self._input_parser = UnitreeRemoteControllerInputParser()
         self._callback_manager = InputSignalCallbackManager()
 
