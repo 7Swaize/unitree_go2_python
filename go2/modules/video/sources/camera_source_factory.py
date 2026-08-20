@@ -19,8 +19,8 @@ class CameraSourceFactory:
     The returned objects are compatible with :class:`VideoModule` and
     should not be used directly.
 
-    Notes
-    -----
+    Note
+    ----
     Users should **not** instantiate camera source classes directly.
     Always use this factory instead.
     """
@@ -71,8 +71,8 @@ class CameraSourceFactory:
             - ``color``: BGR image as a NumPy ``uint8`` array
             - ``depth``: Z16 aligned depth image as a NumPy ``uint16`` array (D345i depth values in millimeters)
 
-        Notes
-        -----
+        Note
+        ----
         Requires an Intel RealSense camera and the RealSense SDK.
         """
         return RealSenseDepthCameraSource()
@@ -90,8 +90,8 @@ class CameraSourceFactory:
             - ``color``: BGR image as a NumPy ``uint8`` array
             - ``depth``: Depth image as a NumPy ``uint16`` array
 
-        Notes
-        -----
+        Note
+        ----
         Runs only within the Mujoco Simulation.
         """
         return VirtualCameraSource()

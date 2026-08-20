@@ -37,8 +37,8 @@ class InputSignalCallbackManager:
         - Detect analog and digital changes
         - Execute callbacks when signals change
 
-    Notes
-    -----
+    Note
+    ----
     - Analog signals have configurable thresholds
     - Stick movement is measured as vector distance
     - Call ``handle(state)`` with the latest ControllerState each update
@@ -188,14 +188,7 @@ class InputSignalCallbackManager:
     
 
 class UnitreeRemoteControllerInputParser:
-    """
-    Parses raw remote controller data into :class:`~modules.input.controller_state.ControllerState`.
-
-    Notes
-    -----
-    - Internal module only
-    - Works with Unitree remote controller data format via Cyclonedds
-    """
+    """Parses raw remote controller data into :class:`~modules.input.controller_state.ControllerState`."""
     def __init__(self) -> None:
         self._state = ControllerState()
 

@@ -26,8 +26,8 @@ class FrameResult:
         """
         Source is RGB-only; depth will never be present.
 
-        Notes
-        -----
+        Note
+        ----
         Static factory method for internal use only. Should not be called by the user.
         """
         return cls(status=FrameStatus.OK, color=color)
@@ -37,8 +37,8 @@ class FrameResult:
         """
         Source is depth-only; color will never be present.
         
-        Notes
-        -----
+        Note
+        ----
         Static factory method for internal use only. Should not be called by the user.
         """
         return cls(status=FrameStatus.OK, depth=depth)
@@ -48,8 +48,8 @@ class FrameResult:
         """
         Source provides both channels (e.g. RealSense aligned frames).
         
-        Notes
-        -----
+        Note
+        ----
         Static factory method for internal use only. Should not be called by the user.
         """
         return cls(status=FrameStatus.OK, color=color, depth=depth)
@@ -59,8 +59,8 @@ class FrameResult:
         """
         Source is initialised but the capture buffer hasn't filled yet.
 
-        Notes
-        -----
+        Note
+        ----
         Static factory method for internal use only. Should not be called by the user.
         """
         return cls(status=FrameStatus.PENDING)

@@ -81,8 +81,8 @@ class ModuleRegistry:
     The registry maps ``ModuleType`` values to their corresponding implementations and metadata. It is responsible for controlling
     which modules are available based on system configuration.
 
-    Notes
-    -----
+    Note
+    ----
     - This is an internal system component.
     - Modules are registered at startup.
     """

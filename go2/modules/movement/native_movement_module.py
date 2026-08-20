@@ -10,8 +10,8 @@ class NativeMovementModule(MovementModule[None]):
     Hardware-backed :class:`MovementModule` implementation that drives the physical Go2 directly through the
     Unitree SDK's ``SportClient``.
 
-    Notes
-    -----
+    Note
+    ----
     Commands issued here take effect on real hardware immediately and are not simulated or sandboxed in any way.
     The underlying ``SportClient`` calls are fire-and-forget from this wrapper's perspective.
     """
@@ -39,8 +39,8 @@ class NativeMovementModule(MovementModule[None]):
         """
         Enter damping state, stopping all motor joint movement.
 
-        Notes
-        -----
+        Note
+        ----
         This mode has the highest priority of any command and is intended for emergency stops in unexpected
         situations. It will override whatever the robot is currently doing.
         """
@@ -51,8 +51,8 @@ class NativeMovementModule(MovementModule[None]):
         """
         Release the joint motor lock and switch to balance standing mode.
 
-        Notes
-        -----
+        Note
+        ----
         Unlike the plain locked-joint standing mode, the robot's posture and height will actively remain balanced
         regardless of the terrain underneath it. Once in this mode, posture can be adjusted in real time via
         :meth:`euler`.
@@ -64,8 +64,8 @@ class NativeMovementModule(MovementModule[None]):
         """
         Stop the current motion and reset motion parameters to their defaults.
 
-        Notes
-        -----
+        Note
+        ----
         This halts whatever movement is in progress and resets Go2's internal motion parameters back to their
         default values. This is the recommended way to terminate a velocity command issued via :meth:`move` when you
         are done with it, rather than letting it simply time out.
@@ -77,8 +77,8 @@ class NativeMovementModule(MovementModule[None]):
         """
         Lock the joints and stand tall at the default standing height.
 
-        Notes
-        -----
+        Note
+        ----
         Unlike balance standing mode, the robot's posture will not actively compensate for uneven terrain here --
         the joints are simply locked at a fixed standing height of 0.33m. Because the posture is rigidly locked,
         this mode can easily cause motor overheating if held too long, so it should be exited (e.g. via
@@ -91,8 +91,8 @@ class NativeMovementModule(MovementModule[None]):
         """
         Lock the joints and crouch down low.
 
-        Notes
-        -----
+        Note
+        ----
         This is the locked-joint counterpart to :meth:`stand_up`, lowering the robot's body close to the ground
         instead of standing tall.
         """
@@ -102,8 +102,8 @@ class NativeMovementModule(MovementModule[None]):
         """
         Recover to a balanced standing position from any current state.
 
-        Notes
-        -----
+        Note
+        ----
         This works regardless of whether the robot is currently fallen over, crouched, or in some other irregular
         pose. It will always attempt to bring the robot back to a balanced standing position, making it a useful
         general-purpose recovery command after a fall or unexpected disturbance.
@@ -123,8 +123,8 @@ class NativeMovementModule(MovementModule[None]):
         yaw : float
             Yaw angle in radians, in the range [-0.6, 0.6].
 
-        Notes
-        -----
+        Note
+        ----
         This only has an effect while the robot is in balance standing mode (see :meth:`balance_stand`) or actively
         moving. The three angles are applied as rotations about the robot's own relative axes, composed in z-y-x
         order (yaw, then pitch, then roll).
@@ -145,8 +145,8 @@ class NativeMovementModule(MovementModule[None]):
         vyaw : float
             Yaw turning rate in rad/s, in the range [-4, 4].
 
-        Notes
-        -----
+        Note
+        ----
         This interface has two properties worth being aware of: the underlying motion controller does not apply any
         filtering to the requested velocities, so abrupt changes in vx/vy/vyaw will be passed straight through to
         the gait controller; and the most recently sent command is held and kept active for 1 second, even if this
@@ -159,8 +159,8 @@ class NativeMovementModule(MovementModule[None]):
         """
         Perform the sit-down special action.
 
-        Notes
-        -----
+        Note
+        ----
         This is a scripted special action rather than a continuous control mode. As with other special actions, it
         should only be triggered once the robot's previous action has fully completed. Issuing it mid-action can
         produce abnormal or jerky movement.
@@ -171,8 +171,8 @@ class NativeMovementModule(MovementModule[None]):
         """
         Recover from a seated position back to a balanced standing position.
 
-        Notes
-        -----
+        Note
+        ----
         This is the counterpart to :meth:`sit`, used to bring the robot from sitting back up onto its feet in a
         balanced stance.
         """
@@ -206,8 +206,8 @@ class NativeMovementModule(MovementModule[None]):
         flag : bool
             True to enable the native joystick response, False to disable it.
 
-        Notes
-        -----
+        Note
+        ----
         With the native joystick response disabled, moving a physically connected joystick will have no effect on
         the robot and will not interfere with whatever program is currently controlling it (useful when a custom
         controller (such as this module) should have exclusive control).
@@ -241,8 +241,8 @@ class NativeMovementModule(MovementModule[None]):
         """
         Perform a front flip.
 
-        Notes
-        -----
+        Note
+        ----
         This action is potentially dangerous. Maintain a safe distance from people and objects before executing
         it, since Unitree does not accept liability for accidents caused by improper use. It may also accelerate
         hardware wear and reduce the robot's operational lifespan, so it should be used sparingly and with caution.
@@ -270,8 +270,8 @@ class NativeMovementModule(MovementModule[None]):
         flag : bool
             True to enter bound run mode, False to exit it and return to agile mode.
 
-        Notes
-        -----
+        Note
+        ----
         Bound run mode uses a bounding gait, where the front and rear leg pairs move together in near-unison rather
         than the more typical diagonal trot pattern.
         """
@@ -286,8 +286,8 @@ class NativeMovementModule(MovementModule[None]):
         flag : bool
             True to enter jump mode, False to exit it and return to agile mode.
 
-        Notes
-        -----
+        Note
+        ----
         Jump mode uses a jump-running gait, with a more pronounced airborne phase between strides than the robot's
         regular gaits.
         """
@@ -302,8 +302,8 @@ class NativeMovementModule(MovementModule[None]):
         flag : bool
             True to enter avoidance mode, False to exit it and return to agile mode.
 
-        Notes
-        -----
+        Note
+        ----
         While in this mode and moving, the robot will actively steer around obstacles it detects. While stationary,
         it can also dodge out of the way of objects approaching it from in front.
         """
@@ -318,8 +318,8 @@ class NativeMovementModule(MovementModule[None]):
         flag : bool
             True to enter rear-leg standing mode, False to exit it and return to agile mode.
 
-        Notes
-        -----
+        Note
+        ----
         In this mode the robot balances on its rear legs in an upright stance. The motors involved are prone to
         overheating in this gait, so calling code should manage timing carefully and avoid holding this mode for
         extended periods, to prevent the robot falling due to motor overheating.
@@ -335,8 +335,8 @@ class NativeMovementModule(MovementModule[None]):
         flag : bool
             True to enter cross-step mode, False to exit it and return to agile mode.
 
-        Notes
-        -----
+        Note
+        ----
         As with :meth:`walk_upright`, the motors involved in this gait are prone to overheating, so calling code
         should manage timing carefully and avoid holding this mode for extended periods, to prevent the robot
         falling due to motor overheating.
@@ -352,8 +352,8 @@ class NativeMovementModule(MovementModule[None]):
         flag : bool
             True to enter classic gait mode, False to exit it and return to agile mode.
 
-        Notes
-        -----
+        Note
+        ----
         This is Go2's AI-driven classic gait, with strong adaptability to complex terrain. It supports climbing
         stairs, and traversing gravel, meadows, and slippery surfaces, all while maintaining a stable and visually
         elegant walking posture.
@@ -364,8 +364,8 @@ class NativeMovementModule(MovementModule[None]):
         """
         Enter regular running mode.
 
-        Notes
-        -----
+        Note
+        ----
         This is a running gait with a maximum speed of 3.7 m/s. It carries some risk due to its high speed, so it
         should be used cautiously, and it has no special handling for complex terrain, making it prone to falling on
         uneven ground.
@@ -376,8 +376,8 @@ class NativeMovementModule(MovementModule[None]):
         """
         Enter regular walking mode.
 
-        Notes
-        -----
+        Note
+        ----
         This is Go2's default gait in normal (non-AI) mode. Like :meth:`trot_run`, it has no special handling for
         complex terrain, but it produces an elegant, stable-looking walking posture on flat ground.
         """
@@ -387,8 +387,8 @@ class NativeMovementModule(MovementModule[None]):
         """
         Toggle obstacle-avoidance suppression while in avoidance mode.
 
-        Notes
-        -----
+        Note
+        ----
         While already in obstacle avoidance mode (see :meth:`free_avoid`), this additionally disables front-facing
         avoidance whenever the joystick is not being pushed, as well as disabling rear-facing avoidance entirely.
         This is a fairly niche behavior and is generally not recommended unless you specifically understand and need
@@ -405,8 +405,8 @@ class NativeMovementModule(MovementModule[None]):
         flag : bool
             True to enable auto-recovery, False to disable it.
 
-        Notes
-        -----
+        Note
+        ----
         If the robot is carrying a payload (such as a gimbal, camera, or other sensor mounted on its head) it's
         recommended to disable this setting. A violent auto-recovery flip after a fall could otherwise damage that
         payload, so disabling auto-recovery avoids triggering that flip.

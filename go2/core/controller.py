@@ -37,14 +37,13 @@ T = TypeVar("T", bound=DogModule)
 class Go2Controller(ABC):
     """    
     Primary control interface for the Unitree Go2 robot.
-
     This is the shared base for :class:`NativeGo2Controller` and :class:`VirtualGo2Controller`.
     It manages hardware initialization, module lifecycles, safety checks, and shutdown.
 
     Modules are accessed via properties rather than direct instantiation.
 
-    Notes
-    -----
+    Note
+    ----
         - All hardware access is routed through this controller.
         - Modules creation, initialization, and shutdown is handled automatically.
         - Supports both SDK-backed hardware and a Mujoco simulation.
@@ -94,10 +93,11 @@ class Go2Controller(ABC):
     # Automatic shutdown on exception incase its not done by users
     def _install_signal_handlers(self) -> None:
         def handler(signum: int, frame: Optional[FrameType]) -> None:
-            self.safe_shutdown()
-
-            signal.signal(signum, signal.SIG_DFL) # Hands control back to default handler
-            os.kill(os.getpid(), signum)
+            try:
+                self.safe_shutdown()
+            finally:
+                signal.signal(signum, signal.SIG_DFL)  # Hands control back to default handler
+                os.kill(os.getpid(), signum)
 
         signal.signal(signal.SIGINT, handler)
         signal.signal(signal.SIGTERM, handler)
@@ -256,11 +256,11 @@ class Go2Controller(ABC):
         user's responsibility to call this method upon normal (error free) script exit.
         Failing to follow this can (**and probably will**) result in zombie ROS2 processes, unreleased resources, and UB.
 
-        Notes
-        -----
-        - This method is **idempotent** and may be safely called multiple times.
+        Note
+        ----
+        This method is **idempotent** and may be safely called multiple times.
         """
-        logger.info("\n[Controller] Starting safe shutdown...")
+        logger.debug("\n[Controller] Starting safe shutdown...")
 
         with self._shutdown_lock:
             if self._shutdown_event.is_set():
@@ -271,21 +271,26 @@ class Go2Controller(ABC):
                 try:
                     callback()
                 except Exception:
-                    logger.exception("[Controller] Cleanup callback failed")
+                    callback_name = getattr(callback, "__name__", repr(callback))
+                    logger.exception(f"[Controller] Pre-shutdown cleanup callback '{callback_name}' failed")
 
             for module_type, module in self._modules.items():
                 try:
                     module._shutdown()
                 except Exception:
-                    logger.exception(f"[Controller] Failed to shutdown {module_type.name}")
+                    logger.exception(
+                        f"[Controller] Failed to shutdown module '{module_type.name}' "
+                        f"({type(module).__name__})"
+                    )
 
             for callback in self._cleanup_callbacks_post_module_shutdown:
                 try:
                     callback()
                 except Exception:
-                    logger.exception("[Controller] Cleanup callback failed")
+                    callback_name = getattr(callback, "__name__", repr(callback))
+                    logger.exception(f"[Controller] Post-shutdown cleanup callback '{callback_name}' failed")
             
-        logger.info("[Controller] Shutdown complete")
+        logger.debug("[Controller] Shutdown complete")
 
 
 
@@ -293,8 +298,15 @@ class NativeGo2Controller(Go2Controller):
     """
     Controller for a physical Go2 robot.
 
-    Exposes every module, including :attr:`input`, and returns :class:`NativeMovementModule`
-    from :attr:`movement`.
+    Exposes every module, including :attr:`input`, and returns :class:`NativeMovementModule` from :attr:`movement`.
+
+    Note
+    ----
+    This controller reads the network interface to use for CycloneDDS from ``sys.argv[1]``:
+        - If no argument is provided (``len(sys.argv) < 2``), it initializes on domain ``1``
+          using the loopback interface ``"lo"``.
+        - If an argument is provided, it is treated as the name of the network interface
+          (e.g. ``"eth0"``) to bind to, and initialization uses domain ``0``.
     """
 
     def __init__(self, execution_mode: ExecutionMode = ExecutionMode.BASIC) -> None:
