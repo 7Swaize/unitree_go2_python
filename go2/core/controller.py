@@ -94,10 +94,11 @@ class Go2Controller(ABC):
     # Automatic shutdown on exception incase its not done by users
     def _install_signal_handlers(self) -> None:
         def handler(signum: int, frame: Optional[FrameType]) -> None:
-            self.safe_shutdown()
-
-            signal.signal(signum, signal.SIG_DFL) # Hands control back to default handler
-            os.kill(os.getpid(), signum)
+            try:
+                self.safe_shutdown()
+            finally:
+                signal.signal(signum, signal.SIG_DFL)  # Hands control back to default handler
+                os.kill(os.getpid(), signum)
 
         signal.signal(signal.SIGINT, handler)
         signal.signal(signal.SIGTERM, handler)
