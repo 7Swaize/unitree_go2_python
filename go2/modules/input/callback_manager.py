@@ -12,7 +12,7 @@ logger = get_logger(__name__)
 _ANALOG_SIGNALS = {
     InputSignal.LEFT_STICK_X, InputSignal.LEFT_STICK_Y,
     InputSignal.RIGHT_STICK_X, InputSignal.RIGHT_STICK_Y,
-    InputSignal.LEFT_TRIGGER, InputSignal.RIGHT_TRIGGER
+    InputSignal.LEFT_TRIGGER
 }
 
 
@@ -208,9 +208,10 @@ class UnitreeRemoteControllerInputParser:
         data1 : int
         data2 : int
         """
+        # We skip '5' to preserve the precision of the 'l2' trigger as analog
         mapping1 = {
             0: "r1", 1: "l1", 2: "start", 3: "select",
-            4: "r2", 5: "l2", 6: "f1", 7: "f3"
+            4: "r2", 6: "f1", 7: "f3"
         }
         mapping2 = {
             0: "a", 1: "b", 2: "x", 3: "y",
@@ -232,11 +233,12 @@ class UnitreeRemoteControllerInputParser:
         ----------
         data : bytes
         """
+        # See ref: https://github.com/unitreerobotics/unitree_legged_sdk/blob/go1/include/unitree_legged_sdk/joystick.h
         self._state.lx = struct.unpack('<f', data[4:8])[0]
-        self._state.ly = struct.unpack('<f', data[20:24])[0]
         self._state.rx = struct.unpack('<f', data[8:12])[0]
         self._state.ry = struct.unpack('<f', data[12:16])[0]
         self._state.l2 = struct.unpack('<f', data[16:20])[0]
+        self._state.ly = struct.unpack('<f', data[20:24])[0]
 
 
     def _parse(self, remote_data) -> ControllerState: # type: ignore[no-untyped-def]
