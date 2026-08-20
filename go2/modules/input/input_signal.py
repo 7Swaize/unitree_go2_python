@@ -4,14 +4,16 @@ from enum import Enum
 class InputSignal(Enum):
     """
     Enumeration of all possible controller input signals.
-
+ 
     Internal mapping from logical signal names to string identifiers used by the system for tracking and callback triggering.
-
+ 
     Members
     -------
     - LEFT_STICK, RIGHT_STICK : Stick identifiers
     - LEFT_STICK_X, LEFT_STICK_Y, RIGHT_STICK_X, RIGHT_STICK_Y : Stick axes
-    - LEFT_TRIGGER, RIGHT_TRIGGER : Analog triggers
+    - LEFT_TRIGGER : Analog trigger (The only trigger with an analog channel in the raw remote packet)
+    - RIGHT_TRIGGER : Digital-only trigger (Despite the name, the Go2 remote exposes no
+      analog channel for R2; it behaves as a plain digital button, firing on press like RIGHT_BUMPER)
     - LEFT_BUMPER, RIGHT_BUMPER : Bumper buttons
     - BUTTON_A, BUTTON_B, BUTTON_X, BUTTON_Y : Face buttons
     - DPAD_UP, DPAD_DOWN, DPAD_LEFT, DPAD_RIGHT : Directional pad
