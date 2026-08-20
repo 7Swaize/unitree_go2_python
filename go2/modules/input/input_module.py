@@ -25,8 +25,8 @@ class InputModule(DogModule):
         Set up input parsing and callback management. This is called internally,
         and should not be called directly by users.
 
-        Notes
-        -----
+        Note
+        ----
         - If `use_sdk` is False, no live input is initialized
         - Internal: subscribes to DDS LOW_STATE topic for live controller messages
         """
@@ -110,8 +110,8 @@ class InputModule(DogModule):
         """
         Clean up input resources. This is handled automatically and shouldn't be called by users.
 
-        Notes
-        -----
+        Note
+        ----
         - Stops DDS subscription and clears all callbacks
         """
         if self._lowstate_subscriber:

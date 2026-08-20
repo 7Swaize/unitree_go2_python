@@ -11,8 +11,8 @@ class AudioModule(DogModule):
     Users should not access or construct this class directly. 
     Rather, they should access it through a :class:`~core.controller.Go2Controller` instance.
 
-    Notes
-    -----
+    Note
+    ----
     - Users do not need to manage threads or the underlying pyttsx3 engine. Though it can be done via a call :meth:`AudioModule.get_engine`.
     """
 
@@ -65,8 +65,8 @@ class AudioModule(DogModule):
         RuntimeError
             If the audio module has not been initialized yet.
 
-        Notes
-        -----
+        Note
+        ----
         This method is primarily for advanced use cases. Users typically
         do not need to call this directly. Unless they want to modify the 
         configuration of the text-to-speech

@@ -61,8 +61,8 @@ class VirtualMovementModule(MovementModule[VirtualCommandHandle]):
     Simulator-backed :class:`MovementModule` implementation that issues sport commands over iceoryx2 IPC
     request/response services rather than the Unitree SDK.
 
-    Notes
-    -----
+    Note
+    ----
     Each command is fire-and-forget and returns a :class:`VirtualCommandHandle` that can be awaited for completion. 
     """
 
@@ -105,8 +105,8 @@ class VirtualMovementModule(MovementModule[VirtualCommandHandle]):
         vyaw : float
             Yaw turning rate in rad/s, in the range [-1.0, +1.0].
 
-        Notes
-        -----
+        Note
+        ----
         This interface has two properties worth being aware of: the underlying motion controller does not apply any
         filtering to the requested velocities, so abrupt changes in vx/vy/vyaw will be passed straight through to
         the gait controller; and the most recently sent command is held and kept active for 1 second, even if this
@@ -126,8 +126,8 @@ class VirtualMovementModule(MovementModule[VirtualCommandHandle]):
         """
         Lock the joints and stand tall at the default standing height.
 
-        Notes
-        -----
+        Note
+        ----
         This is the locked-joint counterpart to :meth:`stand_down`, standing tall instead of lowering
         the robots body close to the ground.
         """
@@ -144,8 +144,8 @@ class VirtualMovementModule(MovementModule[VirtualCommandHandle]):
         """
         Lock the joints and crouch down low (essentially sitting down).
 
-        Notes
-        -----
+        Note
+        ----
         This is the locked-joint counterpart to :meth:`stand_up`, lowering the robot's body close to the ground
         instead of standing tall.
         """
@@ -178,8 +178,8 @@ class VirtualMovementModule(MovementModule[VirtualCommandHandle]):
         """
         Enter damping state, stopping all motor joint movement.
 
-        Notes
-        -----
+        Note
+        ----
         This mode has the highest priority of any command and is intended for emergency stops in unexpected
         situations. It will override whatever the robot is currently doing.
         """

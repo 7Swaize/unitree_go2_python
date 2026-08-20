@@ -9,8 +9,8 @@ class DogModule(ABC):
     Modules are not meant to be interacted with or instaniated directly. Users should only interact with initialized modules 
     via :class:`~core.controller.Go2Controller`.
 
-    Notes
-    -----
+    Note
+    ----
     - All modules must implement ``initialize`` and ``shutdown``.
     - Initialization is idempotent and guarded by ``_initialized``.
     - Modules are created and managed by the module registry.

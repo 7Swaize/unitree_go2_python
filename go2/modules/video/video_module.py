@@ -29,8 +29,8 @@ class VideoModule(DogModule):
         - A :class:`~modules.video.streaming.stream_config.StreamConfig` instance provided by the user
 
 
-    Notes
-    -----
+    Note
+    ----
     - Call :meth:`start_stream_server` before :meth:`send_frame`.
     - :meth:`get_frames` is non-blocking and may return an empty :class:`FrameResult` if the camera has not produced a frame yet.
     """

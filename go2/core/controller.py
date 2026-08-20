@@ -256,9 +256,9 @@ class Go2Controller(ABC):
         user's responsibility to call this method upon normal (error free) script exit.
         Failing to follow this can (**and probably will**) result in zombie ROS2 processes, unreleased resources, and UB.
 
-        Notes
-        -----
-        - This method is **idempotent** and may be safely called multiple times.
+        Note
+        ----
+        This method is **idempotent** and may be safely called multiple times.
         """
         logger.debug("\n[Controller] Starting safe shutdown...")
 
