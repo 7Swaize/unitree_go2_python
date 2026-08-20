@@ -99,11 +99,11 @@ class VirtualMovementModule(MovementModule[VirtualCommandHandle]):
         Parameters
         ----------
         vx : float
-            Forward/backward velocity in m/s, in the range [-1.0, 1.0].
+            Forward/backward velocity in m/s, in the range [-1.0, +1.0].
         vy : float
-            Lateral (side-to-side) velocity in m/s, in the range [-1.0, 1.0].
+            Lateral (side-to-side) velocity in m/s, in the range [-1.0, +1.0].
         vyaw : float
-            Yaw turning rate in rad/s, in the range [-1.0, 1.0].
+            Yaw turning rate in rad/s, in the range [-1.0, +1.0].
 
         Notes
         -----
