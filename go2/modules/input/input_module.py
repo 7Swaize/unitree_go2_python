@@ -30,11 +30,16 @@ class InputModule(DogModule):
         - If `use_sdk` is False, no live input is initialized
         - Internal: subscribes to DDS LOW_STATE topic for live controller messages
         """
+        if self._initialized:
+            return
+
         self._input_parser = UnitreeRemoteControllerInputParser()
         self._callback_manager = InputSignalCallbackManager()
 
         self._lowstate_subscriber = ChannelSubscriber(DDSTopics.LOW_STATE, LowState_)
         self._lowstate_subscriber.Init(self._process_input, 10)
+
+        self._initialized = True
 
     def register_callback(
         self,
@@ -80,21 +85,6 @@ class InputModule(DogModule):
             The previously registered callback function
         """
         self._callback_manager._unregister(signal, callback)
-    
-    @override
-    def _shutdown(self) -> None:
-        """
-        Clean up input resources. This is handled automatically and shouldn't be called by users.
-
-        Notes
-        -----
-        - Stops DDS subscription and clears all callbacks
-        - Should be called when input is no longer needed
-        """
-        if self._lowstate_subscriber:
-            self._lowstate_subscriber.Close() # type: ignore[no-untyped-call]
-        if self._callback_manager:
-            self._callback_manager._shutdown()
 
     def _process_input(self, msg: LowState_) -> ControllerState:
         """
@@ -114,3 +104,17 @@ class InputModule(DogModule):
         self._callback_manager._handle(controller_state)
 
         return controller_state
+
+    @override
+    def _shutdown(self) -> None:
+        """
+        Clean up input resources. This is handled automatically and shouldn't be called by users.
+
+        Notes
+        -----
+        - Stops DDS subscription and clears all callbacks
+        """
+        if self._lowstate_subscriber:
+            self._lowstate_subscriber.Close() # type: ignore[no-untyped-call]
+        if self._callback_manager:
+            self._callback_manager._shutdown()
