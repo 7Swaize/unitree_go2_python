@@ -4,7 +4,7 @@ import threading
 import numpy as np
 from typing import Optional
 from typing_extensions import override
- 
+
 from go2.core import ModuleType, HardwareType, VirtualGo2Controller, create_controller
 from go2.modules.video import CameraSourceFactory
  

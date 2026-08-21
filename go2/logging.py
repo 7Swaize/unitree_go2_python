@@ -20,10 +20,4 @@ def configure_logging(level: int = DEFAULT_LOG_LEVEL) -> None:
 
 
 def get_logger(name: str) -> logging.Logger:
-    logger = logging.getLogger(name)
-    if not logger.handlers:
-        logger.addHandler(_create_default_handler())
-
-    logger.setLevel(DEFAULT_LOG_LEVEL)
-    logger.propagate = False
-    return logger
+    return logging.getLogger(name)
