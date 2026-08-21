@@ -36,6 +36,8 @@ class AudioCommandHandle:
         self._done.set()
 
 
+_SHUTDOWN = object()
+
 class AudioModule(DogModule):
     """
     Text-to-speech playback for the Go2 robot, backed by ``pyttsx3``.
@@ -51,7 +53,6 @@ class AudioModule(DogModule):
         super().__init__("Audio")
         self._queue: queue.Queue[AudioCommandHandle] = queue.Queue(maxsize=AudioModule.MAX_QUEUE)
         self._worker_thread_ref: Optional[threading.Thread] = None
-        self._shutdown_event = threading.Event()
 
 
     @override
@@ -66,7 +67,8 @@ class AudioModule(DogModule):
         self._initialized = True
 
 
-    def get_engine(self) -> pyttsx3.Engine:
+    @property
+    def engine(self) -> pyttsx3.Engine:
         """
         Access the underlying pyttsx3 engine.
 
@@ -74,9 +76,6 @@ class AudioModule(DogModule):
         ----
         Advanced use only (e.g. tweaking rate/voice/volume). Prefer :meth:`say` for normal playback.
         """
-        if not self._initialized:
-            raise RuntimeError("[Audio] Audio module must be initialized before accessing pyttsx3 engine")
-        
         return self._engine
 
 
@@ -110,7 +109,7 @@ class AudioModule(DogModule):
     def _run(self) -> None:
         while True:
             handle = self._queue.get()
-            if self._shutdown_event.is_set():
+            if handle is _SHUTDOWN:
                 return
 
             self._engine.say(handle.text)
@@ -129,8 +128,8 @@ class AudioModule(DogModule):
     @override
     def _shutdown(self) -> None:
         self._engine.stop()
-        self._shutdown_event.set()
         self._drain_and_cancel()
+        self._queue.put(_SHUTDOWN) # type: ignore[arg-type]
 
         if self._worker_thread_ref:
             self._worker_thread_ref.join(timeout=1.0)
