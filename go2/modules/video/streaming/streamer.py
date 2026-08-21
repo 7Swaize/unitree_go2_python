@@ -39,6 +39,9 @@ class WebRTCStreamer:
 
 
     def _send(self, frame: npt.NDArray[Any]) -> None:
+        if len(self._pcs) < 1:
+            return
+
         self._track.push_frame(frame)
 
 
@@ -63,6 +66,7 @@ class WebRTCStreamer:
 
     async def _serve_html(self, request: web.Request) -> web.Response:
         return web.Response(text=HTML_CONTENT, content_type="text/html")
+
 
     async def _offer(self, request: web.Request) -> web.Response:
         params = await request.json()
