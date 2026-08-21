@@ -1,3 +1,6 @@
-from .audio_module import AudioModule
+from .audio_module import AudioModule, AudioCommandHandle
 
-__all__ = ["AudioModule"]
+__all__ = [
+    "AudioModule",
+    "AudioCommandHandle"
+]

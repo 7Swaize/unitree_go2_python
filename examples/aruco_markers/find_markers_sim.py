@@ -4,7 +4,7 @@ import threading
 import numpy as np
 from typing import Optional
 from typing_extensions import override
- 
+
 from go2.core import ModuleType, HardwareType, VirtualGo2Controller, create_controller
 from go2.modules.video import CameraSourceFactory
  
@@ -40,7 +40,7 @@ class VideoThreadWorker(threading.Thread):
             self._latest_frame = frame_result.color
             self._render_preview(frame_result.color)
 
-        cv2.destroyWindow(self.PREVIEW_WINDOW_NAME)
+        cv2.destroyAllWindows()
 
 
     def _render_preview(self, frame: np.ndarray) -> None:
@@ -59,7 +59,7 @@ class VideoThreadWorker(threading.Thread):
 
     def get_latest_frame(self) -> Optional[np.ndarray]:
         # Technically, this is safe.
-        # A pointer swap is atomic via the GIL, so no thread can ever observe a torn struct
+        # A pointer swap is atomic via the GIL, so no thread can ever observe a torn struct.
         # Additionally, this returns a strong reference, which calls Py_INCREF, incrementing its ref count.
         # When this worker thread reassigns 'self._latest_frame', it only rebinds the pointer.
         # The underlying data (prior to reassign) is still prevented from being GC collected, due to the returned strong reference.
@@ -92,7 +92,7 @@ Behavior:
 """
 class MarkerScanProgram:
     CORRECT_ALIGNMENT_VELOCITY: float = 0.5
-    H_OFFSET_THRESHOLD: float = 50.0
+    H_OFFSET_THRESHOLD: float = 35.0
     SEARCH_ROTATE_VELOCITY: float = 0.8
     NUM_MARKERS_TO_SCAN: int = 6
 
@@ -110,7 +110,6 @@ class MarkerScanProgram:
     def _shutdown_callback(self) -> None:
         self._shutdown_event.set()
         self._video_worker.join(timeout=2.0)
-        cv2.destroyAllWindows()
 
 
     def _scan_for_marker(self, target_marker_id: int) -> None:
