@@ -19,6 +19,8 @@ class AudioCommandHandle:
     This handle does not have same restrictions as :class:`VirtualCommandHandle`.
     It doesn't wrap any underlying resources nor lock the ``pyttsx3`` engine.
     """
+    __slots__ = ("_text", "_done")
+
     def __init__(self, text: str) -> None:
         self._text = text
         self._done = threading.Event()
